@@ -1,0 +1,400 @@
+***************************************************************************
+* Supervisory file for SOCSIM microsimulation for Australia, 1950-2023
+* Created on 12.03.2025
+***************************************************************************
+* This simulation uses as input age-specific fertility rates and
+* age-specific probabilities of death (qx)  
+* retrieved from the World Population Prospects 2024 
+* converted into SOCSIM format.
+***************************************************************************
+
+segments  75
+input_file presim
+
+marriage_after_childbirth 1 
+marriage_eval distribution
+marriage_queues 1
+hetfert 0
+bint 12
+
+***********************************************************************
+* Pre-simulation (100 years) to get stable population at 31-12-1949
+* Using WPP rates for 1950
+
+duration 1200
+include rates/Australiafert1950
+include rates/Australiamort1950
+run
+
+* First simulation with actual fertility and mortality rates. 
+* Give population at 31-12-1950
+
+duration 12
+include rates/Australiafert1950
+include rates/Australiamort1950
+run
+
+duration 12
+include rates/Australiafert1951
+include rates/Australiamort1951
+run
+
+duration 12
+include rates/Australiafert1952
+include rates/Australiamort1952
+run
+
+duration 12
+include rates/Australiafert1953
+include rates/Australiamort1953
+run
+
+duration 12
+include rates/Australiafert1954
+include rates/Australiamort1954
+run
+
+duration 12
+include rates/Australiafert1955
+include rates/Australiamort1955
+run
+
+duration 12
+include rates/Australiafert1956
+include rates/Australiamort1956
+run
+
+duration 12
+include rates/Australiafert1957
+include rates/Australiamort1957
+run
+
+duration 12
+include rates/Australiafert1958
+include rates/Australiamort1958
+run
+
+duration 12
+include rates/Australiafert1959
+include rates/Australiamort1959
+run
+
+duration 12
+include rates/Australiafert1960
+include rates/Australiamort1960
+run
+
+duration 12
+include rates/Australiafert1961
+include rates/Australiamort1961
+run
+
+duration 12
+include rates/Australiafert1962
+include rates/Australiamort1962
+run
+
+duration 12
+include rates/Australiafert1963
+include rates/Australiamort1963
+run
+
+duration 12
+include rates/Australiafert1964
+include rates/Australiamort1964
+run
+
+duration 12
+include rates/Australiafert1965
+include rates/Australiamort1965
+run
+
+duration 12
+include rates/Australiafert1966
+include rates/Australiamort1966
+run
+
+duration 12
+include rates/Australiafert1967
+include rates/Australiamort1967
+run
+
+duration 12
+include rates/Australiafert1968
+include rates/Australiamort1968
+run
+
+duration 12
+include rates/Australiafert1969
+include rates/Australiamort1969
+run
+
+duration 12
+include rates/Australiafert1970
+include rates/Australiamort1970
+run
+
+duration 12
+include rates/Australiafert1971
+include rates/Australiamort1971
+run
+
+duration 12
+include rates/Australiafert1972
+include rates/Australiamort1972
+run
+
+duration 12
+include rates/Australiafert1973
+include rates/Australiamort1973
+run
+
+duration 12
+include rates/Australiafert1974
+include rates/Australiamort1974
+run
+
+duration 12
+include rates/Australiafert1975
+include rates/Australiamort1975
+run
+
+duration 12
+include rates/Australiafert1976
+include rates/Australiamort1976
+run
+
+duration 12
+include rates/Australiafert1977
+include rates/Australiamort1977
+run
+
+duration 12
+include rates/Australiafert1978
+include rates/Australiamort1978
+run
+
+duration 12
+include rates/Australiafert1979
+include rates/Australiamort1979
+run
+
+duration 12
+include rates/Australiafert1980
+include rates/Australiamort1980
+run
+
+duration 12
+include rates/Australiafert1981
+include rates/Australiamort1981
+run
+
+duration 12
+include rates/Australiafert1982
+include rates/Australiamort1982
+run
+
+duration 12
+include rates/Australiafert1983
+include rates/Australiamort1983
+run
+
+duration 12
+include rates/Australiafert1984
+include rates/Australiamort1984
+run
+
+duration 12
+include rates/Australiafert1985
+include rates/Australiamort1985
+run
+
+duration 12
+include rates/Australiafert1986
+include rates/Australiamort1986
+run
+
+duration 12
+include rates/Australiafert1987
+include rates/Australiamort1987
+run
+
+duration 12
+include rates/Australiafert1988
+include rates/Australiamort1988
+run
+
+duration 12
+include rates/Australiafert1989
+include rates/Australiamort1989
+run
+
+duration 12
+include rates/Australiafert1990
+include rates/Australiamort1990
+run
+
+duration 12
+include rates/Australiafert1991
+include rates/Australiamort1991
+run
+
+duration 12
+include rates/Australiafert1992
+include rates/Australiamort1992
+run
+
+duration 12
+include rates/Australiafert1993
+include rates/Australiamort1993
+run
+
+duration 12
+include rates/Australiafert1994
+include rates/Australiamort1994
+run
+
+duration 12
+include rates/Australiafert1995
+include rates/Australiamort1995
+run
+
+duration 12
+include rates/Australiafert1996
+include rates/Australiamort1996
+run
+
+duration 12
+include rates/Australiafert1997
+include rates/Australiamort1997
+run
+
+duration 12
+include rates/Australiafert1998
+include rates/Australiamort1998
+run
+
+duration 12
+include rates/Australiafert1999
+include rates/Australiamort1999
+run
+
+duration 12
+include rates/Australiafert2000
+include rates/Australiamort2000
+run
+
+duration 12
+include rates/Australiafert2001
+include rates/Australiamort2001
+run
+
+duration 12
+include rates/Australiafert2002
+include rates/Australiamort2002
+run
+
+duration 12
+include rates/Australiafert2003
+include rates/Australiamort2003
+run
+
+duration 12
+include rates/Australiafert2004
+include rates/Australiamort2004
+run
+
+duration 12
+include rates/Australiafert2005
+include rates/Australiamort2005
+run
+
+duration 12
+include rates/Australiafert2006
+include rates/Australiamort2006
+run
+
+duration 12
+include rates/Australiafert2007
+include rates/Australiamort2007
+run
+
+duration 12
+include rates/Australiafert2008
+include rates/Australiamort2008
+run
+
+duration 12
+include rates/Australiafert2009
+include rates/Australiamort2009
+run
+
+duration 12
+include rates/Australiafert2010
+include rates/Australiamort2010
+run
+
+duration 12
+include rates/Australiafert2011
+include rates/Australiamort2011
+run
+
+duration 12
+include rates/Australiafert2012
+include rates/Australiamort2012
+run
+
+duration 12
+include rates/Australiafert2013
+include rates/Australiamort2013
+run
+
+duration 12
+include rates/Australiafert2014
+include rates/Australiamort2014
+run
+
+duration 12
+include rates/Australiafert2015
+include rates/Australiamort2015
+run
+
+duration 12
+include rates/Australiafert2016
+include rates/Australiamort2016
+run
+
+duration 12
+include rates/Australiafert2017
+include rates/Australiamort2017
+run
+
+duration 12
+include rates/Australiafert2018
+include rates/Australiamort2018
+run
+
+duration 12
+include rates/Australiafert2019
+include rates/Australiamort2019
+run
+
+duration 12
+include rates/Australiafert2020
+include rates/Australiamort2020
+run
+
+duration 12
+include rates/Australiafert2021
+include rates/Australiamort2021
+run
+
+duration 12
+include rates/Australiafert2022
+include rates/Australiamort2022
+run
+
+duration 12
+include rates/Australiafert2023
+include rates/Australiamort2023
+run
