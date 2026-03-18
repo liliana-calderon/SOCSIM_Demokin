@@ -1,0 +1,400 @@
+***************************************************************************
+* Supervisory file for SOCSIM microsimulation for Sweden, 1950-2023
+* Created on 23.10.2025
+***************************************************************************
+* This simulation uses as input age-specific fertility rates and
+* age-specific probabilities of death (qx)  
+* retrieved from the World Population Prospects 2024 
+* converted into SOCSIM format.
+***************************************************************************
+
+segments  75
+input_file presim
+
+marriage_after_childbirth 1 
+marriage_eval distribution
+marriage_queues 1
+hetfert 0
+bint 12
+
+***********************************************************************
+* Pre-simulation (100 years) to get stable population at 31-12-1949
+* Using WPP rates for 1950
+
+duration 1200
+include rates/Swedenfert1950
+include rates/Swedenmort1950
+run
+
+* First simulation with actual fertility and mortality rates. 
+* Give population at 31-12-1950
+
+duration 12
+include rates/Swedenfert1950
+include rates/Swedenmort1950
+run
+
+duration 12
+include rates/Swedenfert1951
+include rates/Swedenmort1951
+run
+
+duration 12
+include rates/Swedenfert1952
+include rates/Swedenmort1952
+run
+
+duration 12
+include rates/Swedenfert1953
+include rates/Swedenmort1953
+run
+
+duration 12
+include rates/Swedenfert1954
+include rates/Swedenmort1954
+run
+
+duration 12
+include rates/Swedenfert1955
+include rates/Swedenmort1955
+run
+
+duration 12
+include rates/Swedenfert1956
+include rates/Swedenmort1956
+run
+
+duration 12
+include rates/Swedenfert1957
+include rates/Swedenmort1957
+run
+
+duration 12
+include rates/Swedenfert1958
+include rates/Swedenmort1958
+run
+
+duration 12
+include rates/Swedenfert1959
+include rates/Swedenmort1959
+run
+
+duration 12
+include rates/Swedenfert1960
+include rates/Swedenmort1960
+run
+
+duration 12
+include rates/Swedenfert1961
+include rates/Swedenmort1961
+run
+
+duration 12
+include rates/Swedenfert1962
+include rates/Swedenmort1962
+run
+
+duration 12
+include rates/Swedenfert1963
+include rates/Swedenmort1963
+run
+
+duration 12
+include rates/Swedenfert1964
+include rates/Swedenmort1964
+run
+
+duration 12
+include rates/Swedenfert1965
+include rates/Swedenmort1965
+run
+
+duration 12
+include rates/Swedenfert1966
+include rates/Swedenmort1966
+run
+
+duration 12
+include rates/Swedenfert1967
+include rates/Swedenmort1967
+run
+
+duration 12
+include rates/Swedenfert1968
+include rates/Swedenmort1968
+run
+
+duration 12
+include rates/Swedenfert1969
+include rates/Swedenmort1969
+run
+
+duration 12
+include rates/Swedenfert1970
+include rates/Swedenmort1970
+run
+
+duration 12
+include rates/Swedenfert1971
+include rates/Swedenmort1971
+run
+
+duration 12
+include rates/Swedenfert1972
+include rates/Swedenmort1972
+run
+
+duration 12
+include rates/Swedenfert1973
+include rates/Swedenmort1973
+run
+
+duration 12
+include rates/Swedenfert1974
+include rates/Swedenmort1974
+run
+
+duration 12
+include rates/Swedenfert1975
+include rates/Swedenmort1975
+run
+
+duration 12
+include rates/Swedenfert1976
+include rates/Swedenmort1976
+run
+
+duration 12
+include rates/Swedenfert1977
+include rates/Swedenmort1977
+run
+
+duration 12
+include rates/Swedenfert1978
+include rates/Swedenmort1978
+run
+
+duration 12
+include rates/Swedenfert1979
+include rates/Swedenmort1979
+run
+
+duration 12
+include rates/Swedenfert1980
+include rates/Swedenmort1980
+run
+
+duration 12
+include rates/Swedenfert1981
+include rates/Swedenmort1981
+run
+
+duration 12
+include rates/Swedenfert1982
+include rates/Swedenmort1982
+run
+
+duration 12
+include rates/Swedenfert1983
+include rates/Swedenmort1983
+run
+
+duration 12
+include rates/Swedenfert1984
+include rates/Swedenmort1984
+run
+
+duration 12
+include rates/Swedenfert1985
+include rates/Swedenmort1985
+run
+
+duration 12
+include rates/Swedenfert1986
+include rates/Swedenmort1986
+run
+
+duration 12
+include rates/Swedenfert1987
+include rates/Swedenmort1987
+run
+
+duration 12
+include rates/Swedenfert1988
+include rates/Swedenmort1988
+run
+
+duration 12
+include rates/Swedenfert1989
+include rates/Swedenmort1989
+run
+
+duration 12
+include rates/Swedenfert1990
+include rates/Swedenmort1990
+run
+
+duration 12
+include rates/Swedenfert1991
+include rates/Swedenmort1991
+run
+
+duration 12
+include rates/Swedenfert1992
+include rates/Swedenmort1992
+run
+
+duration 12
+include rates/Swedenfert1993
+include rates/Swedenmort1993
+run
+
+duration 12
+include rates/Swedenfert1994
+include rates/Swedenmort1994
+run
+
+duration 12
+include rates/Swedenfert1995
+include rates/Swedenmort1995
+run
+
+duration 12
+include rates/Swedenfert1996
+include rates/Swedenmort1996
+run
+
+duration 12
+include rates/Swedenfert1997
+include rates/Swedenmort1997
+run
+
+duration 12
+include rates/Swedenfert1998
+include rates/Swedenmort1998
+run
+
+duration 12
+include rates/Swedenfert1999
+include rates/Swedenmort1999
+run
+
+duration 12
+include rates/Swedenfert2000
+include rates/Swedenmort2000
+run
+
+duration 12
+include rates/Swedenfert2001
+include rates/Swedenmort2001
+run
+
+duration 12
+include rates/Swedenfert2002
+include rates/Swedenmort2002
+run
+
+duration 12
+include rates/Swedenfert2003
+include rates/Swedenmort2003
+run
+
+duration 12
+include rates/Swedenfert2004
+include rates/Swedenmort2004
+run
+
+duration 12
+include rates/Swedenfert2005
+include rates/Swedenmort2005
+run
+
+duration 12
+include rates/Swedenfert2006
+include rates/Swedenmort2006
+run
+
+duration 12
+include rates/Swedenfert2007
+include rates/Swedenmort2007
+run
+
+duration 12
+include rates/Swedenfert2008
+include rates/Swedenmort2008
+run
+
+duration 12
+include rates/Swedenfert2009
+include rates/Swedenmort2009
+run
+
+duration 12
+include rates/Swedenfert2010
+include rates/Swedenmort2010
+run
+
+duration 12
+include rates/Swedenfert2011
+include rates/Swedenmort2011
+run
+
+duration 12
+include rates/Swedenfert2012
+include rates/Swedenmort2012
+run
+
+duration 12
+include rates/Swedenfert2013
+include rates/Swedenmort2013
+run
+
+duration 12
+include rates/Swedenfert2014
+include rates/Swedenmort2014
+run
+
+duration 12
+include rates/Swedenfert2015
+include rates/Swedenmort2015
+run
+
+duration 12
+include rates/Swedenfert2016
+include rates/Swedenmort2016
+run
+
+duration 12
+include rates/Swedenfert2017
+include rates/Swedenmort2017
+run
+
+duration 12
+include rates/Swedenfert2018
+include rates/Swedenmort2018
+run
+
+duration 12
+include rates/Swedenfert2019
+include rates/Swedenmort2019
+run
+
+duration 12
+include rates/Swedenfert2020
+include rates/Swedenmort2020
+run
+
+duration 12
+include rates/Swedenfert2021
+include rates/Swedenmort2021
+run
+
+duration 12
+include rates/Swedenfert2022
+include rates/Swedenmort2022
+run
+
+duration 12
+include rates/Swedenfert2023
+include rates/Swedenmort2023
+run
