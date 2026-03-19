@@ -1,0 +1,786 @@
+***************************************************************************
+* Supervisory file for SOCSIM microsimulation for Sweden, 1950-2100
+* Created on 03.19.2026
+***************************************************************************
+* This simulation uses as input age-specific fertility rates and
+* age-specific probabilities of death (qx)  
+* retrieved from the World Population Prospects 2024 
+* converted into SOCSIM format.
+***************************************************************************
+
+segments  152
+input_file presim
+
+marriage_after_childbirth 1 
+marriage_eval distribution
+marriage_queues 1
+hetfert 0
+bint 12
+
+***********************************************************************
+* Pre-simulation (100 years) to get stable population at 31-12-1949
+* Using WPP rates for 1950
+
+duration 1200
+include rates/SWEfert1950
+include rates/SWEmort1950
+run
+
+
+* First simulation with actual fertility and mortality rates. 
+* Give population at 31-12-1950
+
+duration 12
+include rates/SWEfert1950
+include rates/SWEmort1950
+run
+
+duration 12
+include rates/SWEfert1951
+include rates/SWEmort1951
+run
+
+duration 12
+include rates/SWEfert1952
+include rates/SWEmort1952
+run
+
+duration 12
+include rates/SWEfert1953
+include rates/SWEmort1953
+run
+
+duration 12
+include rates/SWEfert1954
+include rates/SWEmort1954
+run
+
+duration 12
+include rates/SWEfert1955
+include rates/SWEmort1955
+run
+
+duration 12
+include rates/SWEfert1956
+include rates/SWEmort1956
+run
+
+duration 12
+include rates/SWEfert1957
+include rates/SWEmort1957
+run
+
+duration 12
+include rates/SWEfert1958
+include rates/SWEmort1958
+run
+
+duration 12
+include rates/SWEfert1959
+include rates/SWEmort1959
+run
+
+duration 12
+include rates/SWEfert1960
+include rates/SWEmort1960
+run
+
+duration 12
+include rates/SWEfert1961
+include rates/SWEmort1961
+run
+
+duration 12
+include rates/SWEfert1962
+include rates/SWEmort1962
+run
+
+duration 12
+include rates/SWEfert1963
+include rates/SWEmort1963
+run
+
+duration 12
+include rates/SWEfert1964
+include rates/SWEmort1964
+run
+
+duration 12
+include rates/SWEfert1965
+include rates/SWEmort1965
+run
+
+duration 12
+include rates/SWEfert1966
+include rates/SWEmort1966
+run
+
+duration 12
+include rates/SWEfert1967
+include rates/SWEmort1967
+run
+
+duration 12
+include rates/SWEfert1968
+include rates/SWEmort1968
+run
+
+duration 12
+include rates/SWEfert1969
+include rates/SWEmort1969
+run
+
+duration 12
+include rates/SWEfert1970
+include rates/SWEmort1970
+run
+
+duration 12
+include rates/SWEfert1971
+include rates/SWEmort1971
+run
+
+duration 12
+include rates/SWEfert1972
+include rates/SWEmort1972
+run
+
+duration 12
+include rates/SWEfert1973
+include rates/SWEmort1973
+run
+
+duration 12
+include rates/SWEfert1974
+include rates/SWEmort1974
+run
+
+duration 12
+include rates/SWEfert1975
+include rates/SWEmort1975
+run
+
+duration 12
+include rates/SWEfert1976
+include rates/SWEmort1976
+run
+
+duration 12
+include rates/SWEfert1977
+include rates/SWEmort1977
+run
+
+duration 12
+include rates/SWEfert1978
+include rates/SWEmort1978
+run
+
+duration 12
+include rates/SWEfert1979
+include rates/SWEmort1979
+run
+
+duration 12
+include rates/SWEfert1980
+include rates/SWEmort1980
+run
+
+duration 12
+include rates/SWEfert1981
+include rates/SWEmort1981
+run
+
+duration 12
+include rates/SWEfert1982
+include rates/SWEmort1982
+run
+
+duration 12
+include rates/SWEfert1983
+include rates/SWEmort1983
+run
+
+duration 12
+include rates/SWEfert1984
+include rates/SWEmort1984
+run
+
+duration 12
+include rates/SWEfert1985
+include rates/SWEmort1985
+run
+
+duration 12
+include rates/SWEfert1986
+include rates/SWEmort1986
+run
+
+duration 12
+include rates/SWEfert1987
+include rates/SWEmort1987
+run
+
+duration 12
+include rates/SWEfert1988
+include rates/SWEmort1988
+run
+
+duration 12
+include rates/SWEfert1989
+include rates/SWEmort1989
+run
+
+duration 12
+include rates/SWEfert1990
+include rates/SWEmort1990
+run
+
+duration 12
+include rates/SWEfert1991
+include rates/SWEmort1991
+run
+
+duration 12
+include rates/SWEfert1992
+include rates/SWEmort1992
+run
+
+duration 12
+include rates/SWEfert1993
+include rates/SWEmort1993
+run
+
+duration 12
+include rates/SWEfert1994
+include rates/SWEmort1994
+run
+
+duration 12
+include rates/SWEfert1995
+include rates/SWEmort1995
+run
+
+duration 12
+include rates/SWEfert1996
+include rates/SWEmort1996
+run
+
+duration 12
+include rates/SWEfert1997
+include rates/SWEmort1997
+run
+
+duration 12
+include rates/SWEfert1998
+include rates/SWEmort1998
+run
+
+duration 12
+include rates/SWEfert1999
+include rates/SWEmort1999
+run
+
+duration 12
+include rates/SWEfert2000
+include rates/SWEmort2000
+run
+
+duration 12
+include rates/SWEfert2001
+include rates/SWEmort2001
+run
+
+duration 12
+include rates/SWEfert2002
+include rates/SWEmort2002
+run
+
+duration 12
+include rates/SWEfert2003
+include rates/SWEmort2003
+run
+
+duration 12
+include rates/SWEfert2004
+include rates/SWEmort2004
+run
+
+duration 12
+include rates/SWEfert2005
+include rates/SWEmort2005
+run
+
+duration 12
+include rates/SWEfert2006
+include rates/SWEmort2006
+run
+
+duration 12
+include rates/SWEfert2007
+include rates/SWEmort2007
+run
+
+duration 12
+include rates/SWEfert2008
+include rates/SWEmort2008
+run
+
+duration 12
+include rates/SWEfert2009
+include rates/SWEmort2009
+run
+
+duration 12
+include rates/SWEfert2010
+include rates/SWEmort2010
+run
+
+duration 12
+include rates/SWEfert2011
+include rates/SWEmort2011
+run
+
+duration 12
+include rates/SWEfert2012
+include rates/SWEmort2012
+run
+
+duration 12
+include rates/SWEfert2013
+include rates/SWEmort2013
+run
+
+duration 12
+include rates/SWEfert2014
+include rates/SWEmort2014
+run
+
+duration 12
+include rates/SWEfert2015
+include rates/SWEmort2015
+run
+
+duration 12
+include rates/SWEfert2016
+include rates/SWEmort2016
+run
+
+duration 12
+include rates/SWEfert2017
+include rates/SWEmort2017
+run
+
+duration 12
+include rates/SWEfert2018
+include rates/SWEmort2018
+run
+
+duration 12
+include rates/SWEfert2019
+include rates/SWEmort2019
+run
+
+duration 12
+include rates/SWEfert2020
+include rates/SWEmort2020
+run
+
+duration 12
+include rates/SWEfert2021
+include rates/SWEmort2021
+run
+
+duration 12
+include rates/SWEfert2022
+include rates/SWEmort2022
+run
+
+duration 12
+include rates/SWEfert2023
+include rates/SWEmort2023
+run
+
+duration 12
+include rates/SWEfert2024
+include rates/SWEmort2024
+run
+
+duration 12
+include rates/SWEfert2025
+include rates/SWEmort2025
+run
+
+duration 12
+include rates/SWEfert2026
+include rates/SWEmort2026
+run
+
+duration 12
+include rates/SWEfert2027
+include rates/SWEmort2027
+run
+
+duration 12
+include rates/SWEfert2028
+include rates/SWEmort2028
+run
+
+duration 12
+include rates/SWEfert2029
+include rates/SWEmort2029
+run
+
+duration 12
+include rates/SWEfert2030
+include rates/SWEmort2030
+run
+
+duration 12
+include rates/SWEfert2031
+include rates/SWEmort2031
+run
+
+duration 12
+include rates/SWEfert2032
+include rates/SWEmort2032
+run
+
+duration 12
+include rates/SWEfert2033
+include rates/SWEmort2033
+run
+
+duration 12
+include rates/SWEfert2034
+include rates/SWEmort2034
+run
+
+duration 12
+include rates/SWEfert2035
+include rates/SWEmort2035
+run
+
+duration 12
+include rates/SWEfert2036
+include rates/SWEmort2036
+run
+
+duration 12
+include rates/SWEfert2037
+include rates/SWEmort2037
+run
+
+duration 12
+include rates/SWEfert2038
+include rates/SWEmort2038
+run
+
+duration 12
+include rates/SWEfert2039
+include rates/SWEmort2039
+run
+
+duration 12
+include rates/SWEfert2040
+include rates/SWEmort2040
+run
+
+duration 12
+include rates/SWEfert2041
+include rates/SWEmort2041
+run
+
+duration 12
+include rates/SWEfert2042
+include rates/SWEmort2042
+run
+
+duration 12
+include rates/SWEfert2043
+include rates/SWEmort2043
+run
+
+duration 12
+include rates/SWEfert2044
+include rates/SWEmort2044
+run
+
+duration 12
+include rates/SWEfert2045
+include rates/SWEmort2045
+run
+
+duration 12
+include rates/SWEfert2046
+include rates/SWEmort2046
+run
+
+duration 12
+include rates/SWEfert2047
+include rates/SWEmort2047
+run
+
+duration 12
+include rates/SWEfert2048
+include rates/SWEmort2048
+run
+
+duration 12
+include rates/SWEfert2049
+include rates/SWEmort2049
+run
+
+duration 12
+include rates/SWEfert2050
+include rates/SWEmort2050
+run
+
+duration 12
+include rates/SWEfert2051
+include rates/SWEmort2051
+run
+
+duration 12
+include rates/SWEfert2052
+include rates/SWEmort2052
+run
+
+duration 12
+include rates/SWEfert2053
+include rates/SWEmort2053
+run
+
+duration 12
+include rates/SWEfert2054
+include rates/SWEmort2054
+run
+
+duration 12
+include rates/SWEfert2055
+include rates/SWEmort2055
+run
+
+duration 12
+include rates/SWEfert2056
+include rates/SWEmort2056
+run
+
+duration 12
+include rates/SWEfert2057
+include rates/SWEmort2057
+run
+
+duration 12
+include rates/SWEfert2058
+include rates/SWEmort2058
+run
+
+duration 12
+include rates/SWEfert2059
+include rates/SWEmort2059
+run
+
+duration 12
+include rates/SWEfert2060
+include rates/SWEmort2060
+run
+
+duration 12
+include rates/SWEfert2061
+include rates/SWEmort2061
+run
+
+duration 12
+include rates/SWEfert2062
+include rates/SWEmort2062
+run
+
+duration 12
+include rates/SWEfert2063
+include rates/SWEmort2063
+run
+
+duration 12
+include rates/SWEfert2064
+include rates/SWEmort2064
+run
+
+duration 12
+include rates/SWEfert2065
+include rates/SWEmort2065
+run
+
+duration 12
+include rates/SWEfert2066
+include rates/SWEmort2066
+run
+
+duration 12
+include rates/SWEfert2067
+include rates/SWEmort2067
+run
+
+duration 12
+include rates/SWEfert2068
+include rates/SWEmort2068
+run
+
+duration 12
+include rates/SWEfert2069
+include rates/SWEmort2069
+run
+
+duration 12
+include rates/SWEfert2070
+include rates/SWEmort2070
+run
+
+duration 12
+include rates/SWEfert2071
+include rates/SWEmort2071
+run
+
+duration 12
+include rates/SWEfert2072
+include rates/SWEmort2072
+run
+
+duration 12
+include rates/SWEfert2073
+include rates/SWEmort2073
+run
+
+duration 12
+include rates/SWEfert2074
+include rates/SWEmort2074
+run
+
+duration 12
+include rates/SWEfert2075
+include rates/SWEmort2075
+run
+
+duration 12
+include rates/SWEfert2076
+include rates/SWEmort2076
+run
+
+duration 12
+include rates/SWEfert2077
+include rates/SWEmort2077
+run
+
+duration 12
+include rates/SWEfert2078
+include rates/SWEmort2078
+run
+
+duration 12
+include rates/SWEfert2079
+include rates/SWEmort2079
+run
+
+duration 12
+include rates/SWEfert2080
+include rates/SWEmort2080
+run
+
+duration 12
+include rates/SWEfert2081
+include rates/SWEmort2081
+run
+
+duration 12
+include rates/SWEfert2082
+include rates/SWEmort2082
+run
+
+duration 12
+include rates/SWEfert2083
+include rates/SWEmort2083
+run
+
+duration 12
+include rates/SWEfert2084
+include rates/SWEmort2084
+run
+
+duration 12
+include rates/SWEfert2085
+include rates/SWEmort2085
+run
+
+duration 12
+include rates/SWEfert2086
+include rates/SWEmort2086
+run
+
+duration 12
+include rates/SWEfert2087
+include rates/SWEmort2087
+run
+
+duration 12
+include rates/SWEfert2088
+include rates/SWEmort2088
+run
+
+duration 12
+include rates/SWEfert2089
+include rates/SWEmort2089
+run
+
+duration 12
+include rates/SWEfert2090
+include rates/SWEmort2090
+run
+
+duration 12
+include rates/SWEfert2091
+include rates/SWEmort2091
+run
+
+duration 12
+include rates/SWEfert2092
+include rates/SWEmort2092
+run
+
+duration 12
+include rates/SWEfert2093
+include rates/SWEmort2093
+run
+
+duration 12
+include rates/SWEfert2094
+include rates/SWEmort2094
+run
+
+duration 12
+include rates/SWEfert2095
+include rates/SWEmort2095
+run
+
+duration 12
+include rates/SWEfert2096
+include rates/SWEmort2096
+run
+
+duration 12
+include rates/SWEfert2097
+include rates/SWEmort2097
+run
+
+duration 12
+include rates/SWEfert2098
+include rates/SWEmort2098
+run
+
+duration 12
+include rates/SWEfert2099
+include rates/SWEmort2099
+run
+
+duration 12
+include rates/SWEfert2100
+include rates/SWEmort2100
+run
