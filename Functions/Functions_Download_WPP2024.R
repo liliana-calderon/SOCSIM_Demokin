@@ -2,7 +2,7 @@
 # Functions to download WPP2024 data
 
 # Created on 14-10-2025
-# Last modified on 15-10-2025
+# Last modified on 19-03-2026
 
 #----------------------------------------------------------------------------------------------------
 # Increase the time limit for downloads
@@ -11,7 +11,7 @@ options(timeout=2000)
 # Load necessary library
 library(data.table)
 #----------------------------------------------------------------------------------------------------
-# Download the data from the WPP 2024 and save as .csv
+# Download the data from the WPP 2024 and save as .csv ----
 
 download_WPP2024 <- function() {
   
