@@ -37,3 +37,6 @@ seed.Rda
 
 # Simulation results
 sim_results_*
+
+# Graphs
+Graphs/
