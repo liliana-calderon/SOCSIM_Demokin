@@ -27,6 +27,9 @@
 # Work in progress 
 progress/*
 
+# Data in csv
+Data/
+
 # Rate and presim files
 rates/*
 presim*
