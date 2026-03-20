@@ -10,6 +10,8 @@ options(timeout=2000)
 
 # Load necessary library
 library(data.table)
+require(R.utils)
+
 #----------------------------------------------------------------------------------------------------
 # Download the data from the WPP 2024 and save as .csv ----
 
