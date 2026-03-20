@@ -157,8 +157,8 @@ presim.opop$fem <- sample(0:1, nrow(presim.opop), replace = T)
 # Add group 1 for all individuals
 presim.opop$group <- 1
 
-# Add random dates of birth
-presim.opop$dob <- sample(300:1000, nrow(presim.opop), replace = T)
+# Add random dates of birth # Reduce to 200 to have older population by 1850
+presim.opop$dob <- sample(200:1000, nrow(presim.opop), replace = T)
 
 ## Check distribution of sex 
 table(presim.opop$fem)
@@ -173,21 +173,25 @@ presim.omar <- data.frame()
 # Write empty omar for pre-simulation
 write.table(presim.omar, "presim.omar", row.names = F, col.names = F)
 
-
 #------------------------------------------------------------------------------------------------------
-## Run SOCSIM simulations with 'rsocsim' package ----
+## Install 'rsocsim' package ----
 # The instructions to install the rsocsim package and run the simulation 
 # can be found on https://github.com/MPIDR/rsocsim/blob/main/readme.md
-# To get the latest version from source, RTools and devtools must be installed.
-
-# install.packages("devtools")
-# library(devtools)
-# Install rsocsim from Github with devtools:
-# devtools::install_github("MPIDR/rsocsim")
 
 # To get the updates, uninstall and install again the package
 # remove.packages("rsocsim")
 
+# To get the latest version from source, RTools and remotes must be installed.
+#`install_github()` was deprecated in devtools 2.5.0
+# install.packages("remotes")
+library(remotes)
+
+# Install rsocsim from Github with remotes:
+remotes::install_github("MPIDR/rsocsim") 
+# remotes::install_github("MPIDR/rsocsim@v1.5.9")
+
+#------------------------------------------------------------------------------------------------------
+## Run SOCSIM simulations with 'rsocsim' package ----
 # Load rsocsim package
 library("rsocsim")
 
