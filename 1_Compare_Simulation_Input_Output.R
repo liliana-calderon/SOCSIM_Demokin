@@ -21,7 +21,6 @@ options(scipen=999999)
 ## Load packages 
 library(tidyverse)
 library(ggh4x)  # To facet scales-
-library(HMDHFDplus)
 library(patchwork) # To combine ggplots
 library(readxl)
 library(rsocsim) # Functions to estimate rates
@@ -55,7 +54,7 @@ asfr_sim <- rsocsim::estimate_fertility_rates(opop = opop,
                                               age_min_fert = 15, # Closed [
                                               age_max_fert = 50, # Open )
                                               age_group = 5) #[,)
-save(asfr, file = "Measures/asfr.RData")
+save(asfr_sim, file = "Measures/asfr_sim.RData")
 
 # Estimate age-specific mortality rates
 asmr_sim <- rsocsim::estimate_mortality_rates(opop = opop, 
@@ -65,14 +64,14 @@ asmr_sim <- rsocsim::estimate_mortality_rates(opop = opop,
                                               year_group = 5,
                                               age_max_mort = 100, # Open )
                                               age_group = 5) #[,)
-save(asmr, file = "Measures/asmr.RData")
+save(asmr_sim, file = "Measures/asmr_sim.RData")
 
 #------------------------------------------------------------------------------------------------------
 ## Plot Age-specific fertility and mortality rates, 5x5 ----
 
 # Load ASFR and ASMR from the simulations 
-load("Measures/asfr.RData")
-load("Measures/asmr.RData")
+load("Measures/asfr_sim.RData")
+load("Measures/asmr_sim.RData")
 
 # Create a sub-folder called "Graphs" to save the plots if it does not exist.
 ifelse(!dir.exists("Graphs"), dir.create("Graphs"), FALSE)
@@ -173,10 +172,10 @@ ggsave(file="Graphs/ASFR_Input_Output.jpeg", width=17, height=9, dpi=300)
 # Rates will be aggregated as defined in the estimate_mortality_rates()
 
 # Load the WPP 2024 historical and projected life tables in csv format
-WPP_lifetable_female_hist <- read_csv("WPP2024_Life_Table_Complete_Medium_Female_1950-2023.csv.gz", show_col_types = FALSE) 
-WPP_lifetable_male_hist <- read_csv("WPP2024_Life_Table_Complete_Medium_Male_1950-2023.csv.gz", show_col_types = FALSE) 
-WPP_lifetable_female_proj <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Female_2024-2100.csv.gz", show_col_types = FALSE)
-WPP_lifetable_male_proj <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Male_2024-2100.csv.gz", show_col_types = FALSE) 
+WPP_lifetable_female_hist <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Female_1950-2023.csv", show_col_types = FALSE) 
+WPP_lifetable_male_hist <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Male_1950-2023.csv", show_col_types = FALSE) 
+WPP_lifetable_female_proj <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Female_2024-2100.csv", show_col_types = FALSE)
+WPP_lifetable_male_proj <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Male_2024-2100.csv", show_col_types = FALSE) 
 
 # Combine WPP male and female life tables and filter for Sweden
 WPP_mort <- bind_rows(WPP_lifetable_female_hist, WPP_lifetable_male_hist,
@@ -196,7 +195,7 @@ year_range_mort <- min(year_breaks_mort):max(year_breaks_mort-1)
 age_breaks_mort <- unique(as.numeric(str_extract_all(asmr_sim$age, "\\d+", simplify = T)))
 
 # Wrangle WPP life tables
-WPP_mort5 <- WPP_mort %>% # Check if necessary to delete ex
+WPP_mort5 <- WPP_mort %>%
   filter(Year %in% year_range_mort) %>% 
   mutate(year = cut(Year, breaks = year_breaks_mort, 
                     include.lowest = F, right = F, ordered_results = T),
@@ -243,7 +242,7 @@ ggsave(file="Graphs/ASMR_Input_Output.jpeg", width=17, height=9, dpi=300)
 yrs_plot <- c("[1950,1955)", "[2000,2005)", "[2050,2055)", "[2095,2100)") 
 
 # Get the age levels to define them before plotting and avoid wrong order
-age_levels <- levels(SocsimM$age)
+age_levels <- levels(SocsimM5$age)
 
 ## Plotting ASFR and ASMR (for females) from WPP vs SOCSIM 
 bind_rows(WPP_fert5 %>% rename(Estimate = ASFR), 
@@ -300,7 +299,7 @@ age_breaks_fert_1 <- unique(as.numeric(str_extract_all(asfr_1$age, "\\d+", simpl
 age_group_fert_1 <- unique(diff(age_breaks_fert_1)) # Just to check
 
 # Calculate TFR from WPP
-TFR_WPP <- WPP_fert %>%  
+WPP_TFR <- WPP_fert %>%  
   filter(Year %in% year_range_fert_1) %>% 
   group_by(Year) %>% 
   summarise(TFR = sum(ASFR, na.rm = T)) %>% 
@@ -308,7 +307,7 @@ TFR_WPP <- WPP_fert %>%
   mutate(Source = "WPP")
 
 # Calculate TFR from SOCSIM
-TFR <-  asfr_1 %>% 
+Socsim_TFR <-  asfr_1 %>% 
   mutate(Year = as.numeric(str_extract(year, "\\d+"))) %>% 
   group_by(Year) %>% 
   summarise(TFR = sum(socsim, na.rm = T)) %>%
@@ -316,12 +315,10 @@ TFR <-  asfr_1 %>%
   mutate(Source = "SOCSIM") 
 
 ## Plot TFR from WPP vs SOCSIM 
-bind_rows(TFR_WPP, TFR) %>%
-  mutate(transp = ifelse(Source == "SOCSIM", "0", "1")) %>% 
+bind_rows(WPP_TFR, Socsim_TFR) %>%
   ggplot(aes(x = Year, y = TFR, group = Source)) +
-  geom_line(aes(colour = Source, alpha = transp), linewidth = 1.3)+
+  geom_line(aes(colour = Source), linewidth = 1.3)+
   scale_color_manual(values = c("#007A75", "#5B92E5"))+
-  scale_alpha_discrete(guide = "none", range = c(0.2, 1))+
   scale_x_discrete(guide = guide_axis(angle = 90)) +
   theme_graphs()
 ggsave(file="Graphs/WPP_SOCSIM_TFR.jpeg", width=17, height=9, dpi=300)
@@ -340,13 +337,13 @@ asmr_1 <- estimate_mortality_rates(opop = opop,
 save(asmr_1, file = "Measures/asmr_1.RData")
 
 # Compute life tables from asmr 1x1 from the SOCSIM simulation
-lt_socsim <- lt_socsim(asmr_socsim = asmr_1)
-save(lt, file = "Measures/lt.RData")
+Socsim_lt <- lt_socsim(asmr_socsim = asmr_1)
+save(Socsim_lt, file = "Measures/Socsim_lt.RData")
 
 # Load and wrangle life tables for plotting ----
 
 # Load life tables from asmr 1x1 from the SOCSIM simulation
-load("Measures/lt.RData")
+load("Measures/Socsim_lt.RData")
 
 # Load asmr 1x1 for the simulations
 load("Measures/asmr_1.RData")
@@ -358,24 +355,23 @@ year_breaks_mort_1 <- unique(as.numeric(str_extract_all(asmr_1$year, "\\d+", sim
 year_range_mort_1 <- min(year_breaks_mort_1):max(year_breaks_mort_1-1)
 
 # Wrangle WPP life tables 
-WPP_lt <- WPP_mort
+WPP_lt <- WPP_mort %>% 
   # bind_rows(WPP_lifetable_female_hist, WPP_lifetable_male_hist,
   #           WPP_lifetable_female_proj, WPP_lifetable_male_proj) %>% 
   # filter(ISO3_code == "SWE") %>%
   # select(Year = Time, Age = AgeGrpStart, mx, ex, Sex)
-  mutate(sex = factor(sex, levels = c("male", "female")), 
-         Source = "WPP") %>% 
+  mutate(Source = "WPP") %>% 
   select(Year, Sex, Age, ex, Source)
 
 # Wrangle SOCSIM life tables
-lt_socsim <- lt %>%
+Socsim_lt <- Socsim_lt %>%
   mutate(Year = as.numeric(str_extract(year, "\\d+")),
          Sex = ifelse(sex == "female", "Female", "Male"),
          Source = "SOCSIM") %>% 
   select(Year, Sex, Age, ex, Source)
 
 # Plot life expectancy at birth, Input vs Output
-bind_rows(lt_WPP, lt_socsim) %>% 
+bind_rows(WPP_lt, Socsim_lt) %>% 
   filter(Age == 0 & Year %in% year_range_mort_1) %>%
  # mutate(Sex = ifelse(sex == "female", "Female", "Male")) %>% 
   ggplot(aes(x = Year, y = ex, group = Source))+
@@ -388,26 +384,21 @@ ggsave(file="Graphs/e0_Input_Output.jpeg", width=17, height=9, dpi=300)
 #----------------------------------------------------------------------------------------------------
 ## Final plot combining TFR and e0 ----
 
-# Define the same y breaks for all plots
-y_breaks_TFR <- c(0:5)
-y_breaks_e0 <- c(20, 40, 60, 80)
-
 ## Plotting TFR and e0 (for females) from WPP/WPP vs SOCSIM 
-bind_rows(TFR_WPP %>% rename(Estimate = TFR) %>%  mutate(Rate = "TFR"),
-          TFR %>% rename(Estimate = TFR) %>% mutate(Rate = "TFR")) %>% 
+bind_rows(WPP_TFR %>% rename(Estimate = TFR) %>%  mutate(Rate = "TFR"),
+          Socsim_TFR %>% rename(Estimate = TFR) %>% mutate(Rate = "TFR")) %>% 
   mutate(Sex = "Female") %>%   
-  bind_rows(lt_WPP %>% filter(Age == 0) %>% rename(Estimate = ex) %>% mutate(Rate = "e0"),
-            lt_socsim %>% filter(Age == 0) %>% rename(Estimate = ex) %>% mutate(Rate = "e0")) %>% 
+  bind_rows(WPP_lt %>% filter(Age == 0) %>% rename(Estimate = ex) %>% mutate(Rate = "e0"),
+            Socsim_lt %>% filter(Age == 0) %>% rename(Estimate = ex) %>% mutate(Rate = "e0")) %>% 
   filter(Sex == "Female") %>%
   mutate(Rate = ifelse(Rate == "TFR", "Total Fertility Rate", "Life Expectancy at Birth"), 
          Rate = factor(Rate, levels = c("Total Fertility Rate", "Life Expectancy at Birth"))) %>% 
   ggplot(aes(x = Year, y = Estimate, group = Source))+
   facet_wrap(. ~ Rate, scales = "free") + 
   geom_line(aes(colour = Source), linewidth = 1.2) +
-  scale_color_manual(values = c("#CA650D", "#0C0B7F", "#007A75")) +
-  facetted_pos_scales(y = list("Total Fertility Rate" = scale_y_continuous(breaks = y_breaks_TFR, 
-                                                                           limits = c(0, NA)),
-                               "Life Expectancy at Birth" =  scale_y_continuous(breaks = y_breaks_e0)))+
+  scale_color_manual(values = c("#007A75", "#0C0B7F")) +
+  facetted_pos_scales(y = list("Total Fertility Rate" = scale_y_continuous(limits = c(0, NA)),
+                               "Life Expectancy at Birth" =  scale_y_continuous()))+
   scale_x_continuous(breaks = c(1950, 2000, 2050, 2100))+
   theme_graphs()
 
