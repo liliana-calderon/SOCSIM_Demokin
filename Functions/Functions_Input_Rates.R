@@ -1,8 +1,8 @@
 #----------------------------------------------------------------------------------------------------
-# Functions to Write SOCSIM fertility and mortality input rate files using WPP2024 data
+# Functions to write SOCSIM fertility and mortality input rate files using WPP2024 data
 
 # Initial version created on 22-10-2024
-# Last modified on 18-03-2026
+# Last modified on 20-03-2026
 #----------------------------------------------------------------------------------------------------
 # Create a sub-folder called "rates" to save the rate files if it does not exist.
 ifelse(!dir.exists("rates"), dir.create("rates"), FALSE)
@@ -19,24 +19,24 @@ write_socsim_fertility_rates_WPP <- function(Country, Year_Min, Year_Max) {
   # Wrangle data and compute monthly fertility rates
   ASFR <- fertility %>%
     filter(ISO3_code == Country & Time >= Year_Min & Time <= Year_Max & Variant == "Medium") %>%
-    select(Year = Time, Age = AgeGrpStart, ASFR)  %>%
+    select(Year = Time, Age = AgeGrpStart, ASFR) %>%
     mutate(ASFR = ASFR/1000,
            Age_up = Age + 1, # SOCSIM uses the upper Age bound
            Month = 0,
            ASFR_mo = ASFR/12) %>%
     select(-ASFR)
   
-  # Tibble with expected ages
-  Tibble_ages <- tibble(Age = c(0, 12, 13, 14, seq(15,55), 56))
+  # Tibble with expected ages, including lower and upper limits
+  Tibble_ages <- tibble(Age = c(0, seq(15,50)))
   
-  # Add rows with rates = 0 for ages [0-14] and [51-101]
+  # Add rows with rates = 0 for ages [0-14] and [50-101]
   ASFR <- ASFR %>%
     # create every Year × Age combination
     complete(Year, Age = Tibble_ages$Age) %>%
     # Fill blanks and compute Age_up and Month consistently
     mutate(ASFR_mo = coalesce(ASFR_mo, 0),
-           Age_up  = case_when(Age == 0 ~ 12L,
-                               Age == 56 ~ 101L,
+           Age_up  = case_when(Age == 0 ~ 15L,
+                               Age == 50 ~ 101L,
                                TRUE ~ Age + 1L),
            Month   = 0) %>%
     arrange(Year, Age_up) %>%
@@ -54,7 +54,7 @@ write_socsim_fertility_rates_WPP <- function(Country, Year_Min, Year_Max) {
     
     # Find the index of each year of the iteration
     n <- which(Year == years)
-    n_row <- (n-1)*46 + rows_ageF
+    n_row <- (n-1)*37 + rows_ageF
     
     # Open an output file connection
     outfilename <- file(paste0("rates/",Country,"fert",Year), "w")
@@ -72,8 +72,6 @@ write_socsim_fertility_rates_WPP <- function(Country, Year_Min, Year_Max) {
     cat(c("* Data downloaded on ", format(Sys.time(), format= "%d %b %Y %X %Z"), "\n"),
         file = outfilename)
     cat(c("** NB: The original WPP annual rates have been converted into monthly rates", "\n"),
-        file = outfilename)
-    cat(c("** The open age intervals (14- and 49+) are limited to one year [14-15) and [49-50). Ages below and above are set to 0", "\n"),
         file = outfilename)
     cat("\n", file = outfilename)
     
@@ -135,6 +133,10 @@ write_socsim_mortality_rates_WPP <- function(Country, Year_Min, Year_Max) {
     cat(c("** Period (Monthly) Age-Specific Probabilities of Death for", Country, "in", Year, "\n"),
         file = outfilename)
     cat(c("* Retrieved from the World Population Prospects 2024. Single age life tables up to age 100 Medium variant", "\n"),
+        file = outfilename)
+    cat(c("* https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Life_Table_Complete_Medium_Female_1950-2023.csv.gz", "and", "\n"),
+        file = outfilename)
+    cat(c("* https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Life_Table_Complete_Medium_Male_1950-2023.csv.gz", "and", "\n"),
         file = outfilename)
     cat(c("* https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Life_Table_Complete_Medium_Female_2024-2100.csv.gz", "and", "\n"),
         file = outfilename)
