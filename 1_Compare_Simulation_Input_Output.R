@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 14-10-2025
-# Last modified on 19-03-2026
+# Last modified on 23-03-2026
 
 ## Based on code prepared for the overlap with ancestors paper
 # U:/SOCSIM/SOCSIM_Living_Ancestors/1_Compare_Input_Output.R
@@ -39,7 +39,28 @@ source("Functions/Functions_Life_Table.R")
 load("opop.RData")
 load("omar.RData")
 
-#------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
+# Load and filter previous .opop to work in the meanwhile ----
+
+# Define some constants 
+last_month <- opop %>% pull(dod) %>% max()
+final_sim_year <- 2100
+
+# Temporarily using the opop created for SOCSIM_Living_Ancestors 
+# filtered for those born after 1850 (month 3589 onwards) 
+load("U://SOCSIM/SOCSIM_Living_Ancestors/opop.RData")
+
+opop <- opop %>%  filter(dob >= 3589)
+save(opop, file = "opop.RData")
+
+# Temporarily using the omar created for SOCSIM_Living_Ancestors 
+# filtered for those married after 1800 (month 2989 onwards) 
+load("U://SOCSIM/SOCSIM_Living_Ancestors/omar.RData")
+
+omar <- omar %>% filter(dstart >= 2989)
+save(omar, file = "omar.RData")
+
+------------------------------------------------------------------------------------------------------
 # Age-Specific Fertility and Mortality rates, 5x5 ----
 
 # Create a sub-folder called "Measures" to save the output measures if it does not exist.
@@ -101,7 +122,7 @@ bind_rows(asfr_sim %>%
   facetted_pos_scales(y = list(ASFR = scale_y_continuous(),
                                ASMR =  scale_y_continuous(trans = "log10"))) +
   theme_graphs() +
-  scale_color_manual(values = c("#B76527", "#79B727", "#2779B7", "#6527B7"))+ 
+  scale_color_manual(values = c("#5079B7", "#B72779", "#9E5BB7", "#6527B7")) +
   scale_x_discrete(guide = guide_axis(angle = 90)) +
   labs(x = "Age", y = "Estimate")
 ggsave(file="Graphs/ASFR_ASMR_SOCSIM.jpeg", width=17, height=9, dpi=300)
@@ -160,7 +181,7 @@ bind_rows(WPP_fert5, SocsimF5) %>%
   filter(year %in% yrs_plot) %>% 
   ggplot(aes(x = age, y = ASFR, group = interaction(year, Source)))+
   geom_line(aes(colour = year, linetype = Source), linewidth = 1.2)+
-  scale_color_manual(values = c("#B76527", "#79B727", "#2779B7", "#6527B7"))+ 
+  scale_color_manual(values = c("#5079B7", "#B72779", "#9E5BB7", "#6527B7")) +
   scale_linetype_manual(values = c("WPP" = "dotted", "SOCSIM" = "solid")) +
   scale_x_discrete(guide = guide_axis(angle = 90)) +
   theme_graphs()
@@ -219,7 +240,7 @@ SocsimM5 <- asmr_sim %>%
 ## Plot ASMR from WPP vs SOCSIM   
 
 # Same years to plot than above (in intervals). 
-yrs_plot <- c("[1950,1955)", "[2000,2005)", "[2050,2055)", "[2095,2100)") 
+yrs_plot <- c("[1950,1955)", "[1995,2000)", "[2050,2055)", "[2095,2100)") 
 
 bind_rows(WPP_mort5, SocsimM5) %>%
   filter(year %in% yrs_plot) %>% 
@@ -228,7 +249,7 @@ bind_rows(WPP_mort5, SocsimM5) %>%
   facet_wrap(~Sex) +
   geom_line(aes(colour = year, linetype = Source), linewidth = 1.2)+
   scale_y_log10() +
-  scale_color_manual(values = c("#B76527", "#79B727", "#2779B7", "#6527B7"))+ 
+  scale_color_manual(values = c("#5079B7", "#B72779", "#9E5BB7", "#6527B7")) +
   scale_linetype_manual(values = c("WPP" = "dotted", "SOCSIM" = "solid")) +
   scale_x_discrete(guide = guide_axis(angle = 90)) +
   theme_graphs()
@@ -253,14 +274,15 @@ bind_rows(WPP_fert5 %>% rename(Estimate = ASFR),
   # Filter rates of 0, infinite (N_Deaths/0_Pop) and NaN (0_Deaths/0_Pop) values
   filter(Estimate != 0 & !is.infinite(Estimate) & !is.nan(Estimate)) %>% 
   filter(Sex == "Female") %>% 
-  mutate(Year = year,
-         age = factor(as.character(age), levels = age_levels),
+  mutate(age = factor(as.character(age), levels = age_levels),
          Rate = ifelse(Rate == "ASFR", "Age-Specific Fertility Rates", "Age-Specific Mortality Rates")) %>%
-  filter(year %in% yrs_plot) %>% 
-  ggplot(aes(x = age, y = Estimate, group = interaction(year, Source)))+
+  rename(Year = year) %>% 
+  filter(Year %in% yrs_plot) %>% 
+  ggplot(aes(x = age, y = Estimate, group = interaction(Source, Year)))+
   facet_wrap(. ~ Rate, scales = "free") + 
-  geom_line(aes(colour = year, linetype = Source), linewidth = 1)+
-  scale_linetype_manual(values = c("WPP" = "solid","SOCSIM" = "11")) +
+  geom_line(aes(colour = Year, linetype = Source), linewidth = 1.5)+
+  scale_color_manual(values = c("#5079B7", "#B72779", "#9E5BB7", "#6527B7")) +
+  scale_linetype_manual(values = c("SOCSIM" = "solid", "WPP" = "11")) +
   facetted_pos_scales(y = list("Age-Specific Fertility Rates" = scale_y_continuous(),
                                "Age-Specific Mortality Rates" =  scale_y_continuous(trans = "log10")))+
   scale_x_discrete(guide = guide_axis(angle = 90)) +
@@ -356,10 +378,6 @@ year_range_mort_1 <- min(year_breaks_mort_1):max(year_breaks_mort_1-1)
 
 # Wrangle WPP life tables 
 WPP_lt <- WPP_mort %>% 
-  # bind_rows(WPP_lifetable_female_hist, WPP_lifetable_male_hist,
-  #           WPP_lifetable_female_proj, WPP_lifetable_male_proj) %>% 
-  # filter(ISO3_code == "SWE") %>%
-  # select(Year = Time, Age = AgeGrpStart, mx, ex, Sex)
   mutate(Source = "WPP") %>% 
   select(Year, Sex, Age, ex, Source)
 
@@ -373,10 +391,9 @@ Socsim_lt <- Socsim_lt %>%
 # Plot life expectancy at birth, Input vs Output
 bind_rows(WPP_lt, Socsim_lt) %>% 
   filter(Age == 0 & Year %in% year_range_mort_1) %>%
- # mutate(Sex = ifelse(sex == "female", "Female", "Male")) %>% 
   ggplot(aes(x = Year, y = ex, group = Source))+
   geom_line(aes(colour = Source), linewidth = 1.3)+
-  scale_color_manual(values = c("#5B92E5", "#007A75"))+
+  scale_color_manual(values = c("#007A75", "#5B92E5"))+
   facet_wrap(~Sex) +
   theme_graphs()+
   labs(y = "e0") 
@@ -384,7 +401,7 @@ ggsave(file="Graphs/e0_Input_Output.jpeg", width=17, height=9, dpi=300)
 #----------------------------------------------------------------------------------------------------
 ## Final plot combining TFR and e0 ----
 
-## Plotting TFR and e0 (for females) from WPP/WPP vs SOCSIM 
+## Plotting TFR and e0 (for females) from WPP vs SOCSIM 
 bind_rows(WPP_TFR %>% rename(Estimate = TFR) %>%  mutate(Rate = "TFR"),
           Socsim_TFR %>% rename(Estimate = TFR) %>% mutate(Rate = "TFR")) %>% 
   mutate(Sex = "Female") %>%   
@@ -395,11 +412,10 @@ bind_rows(WPP_TFR %>% rename(Estimate = TFR) %>%  mutate(Rate = "TFR"),
          Rate = factor(Rate, levels = c("Total Fertility Rate", "Life Expectancy at Birth"))) %>% 
   ggplot(aes(x = Year, y = Estimate, group = Source))+
   facet_wrap(. ~ Rate, scales = "free") + 
-  geom_line(aes(colour = Source), linewidth = 1.2) +
-  scale_color_manual(values = c("#007A75", "#0C0B7F")) +
+  geom_line(aes(colour = Source), linewidth = 1.5) +
+  scale_color_manual(values = c("#007A75", "#5B92E5")) +
   facetted_pos_scales(y = list("Total Fertility Rate" = scale_y_continuous(limits = c(0, NA)),
                                "Life Expectancy at Birth" =  scale_y_continuous()))+
   scale_x_continuous(breaks = c(1950, 2000, 2050, 2100))+
   theme_graphs()
-
 ggsave(file="Graphs/TFR_e0_Input_Output.pdf", width=17, height=9, dpi=300, device = "pdf")
