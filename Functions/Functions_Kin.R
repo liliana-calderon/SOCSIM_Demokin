@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------------------
-# Function to retrieve pids of close kin of a given ego(s) from SOCSIM microsimulation outputs
+# Function to retrieve members of a kinship network of a given ego(s) from SOCSIM microsimulation outputs
 
 # To run the functions, .opop and omar files must be set in the GlobalEnv
 
