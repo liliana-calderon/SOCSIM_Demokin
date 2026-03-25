@@ -44,14 +44,57 @@ final_sim_year <- 2100
 # Get pids of individuals born between 1950 and 2100
 egos <- opop %>% 
   mutate(birth_year = asYr(dob, last_month, final_sim_year)) %>% 
-  filter(birth_year >= 1950 & birth_year <= 2000) %>% 
+  filter(birth_year >= 1950 & birth_year <= 2100) %>% 
   pull(pid)
 
 # Check length of number of egos selected
-length(egos) # 202648
+length(egos) # 429863
 
 # Retrieve pids of kin of individuals born between 1950 and 2100
-kin <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
-save(kin, file = "kin.RData")
+start <- Sys.time()
+
+kin_list <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
+save(kin_list, file = "kin.RData")
+
+end <- Sys.time()
+print(end-start)
 
 #------------------------------------------------------------------------------------------------------
+# Transform nested list into a tibble, using imap (indexed map)
+
+# Get the vector of kin pids for each kin type (.x) and the name (or index) of the kin type (.y)
+kin <- kin_list %>%
+  imap_dfr(~ tibble(
+    index_ego = 1:length(.x),
+    kin_type = .y,
+    pids_kin = .x)) %>%
+  # Match ego_index in the kin list to ego pids in the egos vector
+  mutate(pid_ego = egos[index_ego]) %>%
+  # Unnest the pids_kin list so one row corresponds to each kin
+  unnest(pids_kin) %>%
+  filter(!is.na(pids_kin)) %>%
+  select(pid_ego, kin_type, pid_kin = pids_kin)
+
+# Add sex and dates of birth and death of egos and their kin
+kin2 <- kin %>%
+  left_join(select(opop, c(pid, dob, dod, fem)), 
+            by = join_by("pid_ego" == "pid")) %>% 
+  rename(dob_ego = dob, dod_ego = dod, fem_ego = fem) %>% 
+  left_join(select(opop, c(pid, dob, dod, fem)), 
+            by = join_by("pid_kin" == "pid")) %>% 
+  rename(dob_kin = dob, dod_kin = dod, fem_kin = fem)
+
+mean_kin_birth <- kin2 %>%
+  recode_kin_sex() %>%
+  # Keep only kin who died in/after egos' birth month or are still alive
+  filter(dob_ego <= dod_kin | dod_kin == 0) %>%
+  mutate(dob_ego_year = asYr(dob_ego, last_month, final_sim_year)) %>%
+  # Count number of kin types by year
+  count(dob_ego_year, kin_type, name = "n_kin") %>% 
+  # Get number of egos per year as denominator for all kin_types
+  left_join(kin2 %>%
+              mutate(dob_ego_year = asYr(dob_ego, last_month, final_sim_year)) %>%
+              distinct(dob_ego_year, pid_ego) %>%
+              count(dob_ego_year, name = "n_egos"),
+            by = "dob_ego_year") %>%
+  mutate(mean_kin = n_kin / n_egos)
