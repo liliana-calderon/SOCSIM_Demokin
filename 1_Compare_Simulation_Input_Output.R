@@ -9,14 +9,14 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 14-10-2025
-# Last modified on 23-03-2026
+# Last modified on 25-03-2026
 
 ## Based on code prepared for the overlap with ancestors paper
 # U:/SOCSIM/SOCSIM_Living_Ancestors/1_Compare_Input_Output.R
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 # Prevent scientific notation (useful for the rate calculation)
-options(scipen=999999)
+options(scipen=9999)
 
 ## Load packages 
 library(tidyverse)
@@ -38,27 +38,6 @@ source("Functions/Functions_Life_Table.R")
 # from simulation with no heterogeneous fertility
 load("opop.RData")
 load("omar.RData")
-
-#----------------------------------------------------------------------------------------------------
-# Load and filter previous .opop to work in the meanwhile ----
-
-# Define some constants 
-last_month <- opop %>% pull(dod) %>% max()
-final_sim_year <- 2100
-
-# Temporarily using the opop created for SOCSIM_Living_Ancestors 
-# filtered for those born after 1850 (month 3589 onwards) 
-load("U://SOCSIM/SOCSIM_Living_Ancestors/opop.RData")
-
-opop <- opop %>%  filter(dob >= 3589)
-save(opop, file = "opop.RData")
-
-# Temporarily using the omar created for SOCSIM_Living_Ancestors 
-# filtered for those married after 1800 (month 2989 onwards) 
-load("U://SOCSIM/SOCSIM_Living_Ancestors/omar.RData")
-
-omar <- omar %>% filter(dstart >= 2989)
-save(omar, file = "omar.RData")
 
 ------------------------------------------------------------------------------------------------------
 # Age-Specific Fertility and Mortality rates, 5x5 ----
@@ -161,8 +140,8 @@ WPP_fert5 <- WPP_fert %>%
                    include.lowest = F, right = F, ordered_results = T)) %>% 
   filter(!is.na(age)) %>% 
   group_by(year, age) %>%
-  summarise(ASFR = mean(ASFR, na.rm = T)) %>%
-  ungroup() %>%
+  summarise(ASFR = mean(ASFR, na.rm = T), 
+            .groups = "drop_last") %>%
   mutate(Source = "WPP", 
          Rate = "ASFR")
 
@@ -224,8 +203,8 @@ WPP_mort5 <- WPP_mort %>%
                    include.lowest = F, right = F, ordered_results = T)) %>%
   filter(!is.na(age)) %>% 
   group_by(year, Sex, age) %>% 
-  summarise(mx = mean(mx, na.rm = T)) %>%
-  ungroup() %>% 
+  summarise(mx = mean(mx, na.rm = T), 
+            .groups = "drop_last") %>% 
     mutate(Source = "WPP",
            Rate = "ASMR")
 
@@ -324,16 +303,16 @@ age_group_fert_1 <- unique(diff(age_breaks_fert_1)) # Just to check
 WPP_TFR <- WPP_fert %>%  
   filter(Year %in% year_range_fert_1) %>% 
   group_by(Year) %>% 
-  summarise(TFR = sum(ASFR, na.rm = T)) %>% 
-  ungroup() %>% 
+  summarise(TFR = sum(ASFR, na.rm = T), 
+            .groups = "drop_last") %>% 
   mutate(Source = "WPP")
 
 # Calculate TFR from SOCSIM
 Socsim_TFR <-  asfr_1 %>% 
   mutate(Year = as.numeric(str_extract(year, "\\d+"))) %>% 
   group_by(Year) %>% 
-  summarise(TFR = sum(socsim, na.rm = T)) %>%
-  ungroup() %>% 
+  summarise(TFR = sum(socsim, na.rm = T),
+            .groups = "drop_last") %>% 
   mutate(Source = "SOCSIM") 
 
 ## Plot TFR from WPP vs SOCSIM 
