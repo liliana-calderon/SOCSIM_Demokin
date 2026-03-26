@@ -1,1 +1,4 @@
 In this research, we examine the similarities and differences between the two types of kinship models: the matrix kinship models and the demographic microsimulation with SOCSIM
+We run microsimulation and formal demographic models in stable (time-invariant) and dynamic (time-varying) settings, using age-specific fertility rates and age-specific probabilities of death from the World Population Prospects (WPP) 2024 Revision for Sweden, Colombia and China over the period 1950–2100.
+We compare the characteristics, assumptions, data requirements and outputs of the two models and time settings, focusing on the mean and distribution of the numbers and ages of different types of kin. 
+We use the example of grandparents and grandchildren to illustrate differences in the averages and distributions, as well as the proportion of individuals who have no grandparents or grandchildren, or a large number of either.
