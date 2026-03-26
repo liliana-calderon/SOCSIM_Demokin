@@ -32,7 +32,7 @@ source("Functions/Functions_Kin.R")
 source("Functions/Functions_Graphs.R")
 
 #------------------------------------------------------------------------------------------------------
-## Trace kinship network of individuals born between 1950 and 2100 ----
+## Retrieve kinship network of individuals born between 1950 and 2100 ----
 
 ## Load opop generated in 0_Set_Up_Simulation.R 
 load("opop.RData")
@@ -50,19 +50,15 @@ egos <- opop %>%
 # Check length of number of egos selected
 length(egos) # 429863
 
-# Retrieve pids of kin of individuals born between 1950 and 2100
-start <- Sys.time()
-
+# Retrieve pids of kin of individuals born 1950-2100
 kin_list <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
 save(kin_list, file = "kin_list.RData")
-
-end <- Sys.time()
-print(end-start)
 # Time difference of 6.206231 hours
-#------------------------------------------------------------------------------------------------------
-# Transform nested list into a tibble, using imap (indexed map)
 
-# Get the vector of kin pids for each kin type (.x) and the name (or index) of the kin type (.y)
+
+# Transform nested list into a tibble, using imap (indexed map)
+# Get the vector of kin pids for each kin type (.x) 
+# and the name (or index) of the kin type (.y)
 kin <- kin_list %>%
   imap_dfr(~ tibble(
     index_ego = 1:length(.x),
@@ -70,20 +66,27 @@ kin <- kin_list %>%
     pids_kin = .x)) %>%
   # Match ego_index in the kin list to ego pids in the egos vector
   mutate(pid_ego = egos[index_ego]) %>%
-  # Unnest the pids_kin list so one row corresponds to each kin
+  # Unnest the pids_kin list so that each row corresponds to each kin
   unnest(pids_kin) %>%
   filter(!is.na(pids_kin)) %>%
-  select(pid_ego, kin_type, pid_kin = pids_kin)
-
-# Add sex and dates of birth and death of egos and their kin
-kin <- kin %>%
+  select(pid_ego, kin_type, pid_kin = pids_kin) %>% 
+  ### CHECK IF THE LINES BELOW SHOULD REMAIN IN kin.RData OR ADDED AFTERWARDS
+  # Add sex and dates of birth and death of egos and their kin
   left_join(select(opop, c(pid, dob, dod, fem)), 
             by = join_by("pid_ego" == "pid")) %>% 
   rename(dob_ego = dob, dod_ego = dod, fem_ego = fem) %>% 
   left_join(select(opop, c(pid, dob, dod, fem)), 
             by = join_by("pid_kin" == "pid")) %>% 
   rename(dob_kin = dob, dod_kin = dod, fem_kin = fem)
+save(kin, file = "kin.RData")
 
+#------------------------------------------------------------------------------------------------------
+## Estimate mean number of kin alive at birth ----
+
+# Load df with pids of kin, and relevant information from opop, for individuals born 1750-2000
+load("kin.RData")
+
+# Calculate mean number of kin alive at ego's birth 
 mean_kin_birth <- kin %>%
   recode_kin_sex() %>%
   # Keep only kin who were born before egos' birth month
@@ -102,6 +105,7 @@ mean_kin_birth <- kin %>%
   mutate(mean_kin = n_kin / n_egos)
 
 # Check kin types in mean_kin_birth
+# No descendants should be included there
 mean_kin_birth %>% pull(kin_type) %>% unique()
 
 # Plot mean number of kin alive at birth, faceted by sex
