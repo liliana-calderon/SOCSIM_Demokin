@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 25-03-2026
+# Last modified on 27-03-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -104,8 +104,7 @@ mean_kin_birth <- kin %>%
             by = "dob_ego_year") %>%
   mutate(mean_kin = n_kin / n_egos)
 
-# Check kin types in mean_kin_birth
-# No descendants should be included there
+# Check kin types in mean_kin_birth (No descendants should appear)
 mean_kin_birth %>% pull(kin_type) %>% unique()
 
 # Plot mean number of kin alive at birth, faceted by sex
