@@ -1,6 +1,6 @@
 ***************************************************************************
 * Supervisory file for SOCSIM microsimulation for Sweden, 1950-2100
-* Created on 03.19.2026
+* Modified on 02.04.2026
 ***************************************************************************
 * This simulation uses as input age-specific fertility rates and
 * age-specific probabilities of death (qx)  
@@ -18,10 +18,11 @@ hetfert 0
 bint 12
 
 ***********************************************************************
-* Pre-simulation (100 years) to get stable population at 31-12-1949
-* Using WPP rates for 1950
+* Pre-simulation (200 years) using WPP rates for 1950
+* to get stable population at 31-12-1949
+* with complete kinship networks for individuals across all ages 0-100
 
-duration 1200
+duration 2400
 include rates/SWEfert1950
 include rates/SWEmort1950
 run
