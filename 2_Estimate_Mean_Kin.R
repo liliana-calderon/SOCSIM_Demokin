@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 27-03-2026
+# Last modified on 01-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -25,12 +25,11 @@ library(cowplot) # For separate legends of faceted plots
 #library(patchwork) # To combine ggplots
 #library(svglite) # To save svg files
 
-## Load function to retrieve selected kin
+## Load function to retrieve selected kin and recode kin types
 source("Functions/Functions_Kin.R")
 
 ## Load theme for the graphs and to convert SOCSIM time
 source("Functions/Functions_Graphs.R")
-
 #------------------------------------------------------------------------------------------------------
 ## Retrieve kinship network of individuals born between 1950 and 2100 ----
 
@@ -41,19 +40,29 @@ load("opop.RData")
 last_month <- opop %>% pull(dod) %>% max()
 final_sim_year <- 2100
 
-# Get pids of individuals born between 1950 and 2100
-egos <- opop %>% 
-  mutate(birth_year = asYr(dob, last_month, final_sim_year)) %>% 
-  filter(birth_year >= 1950 & birth_year <= 2100) %>% 
+# Define period of analysis
+year_start <- 1950
+year_end   <- 2100
+
+# Months for 1st Jan each year in the analysis window (1950-2100)
+jan_months <- jan(year_start:year_end, last_month, final_sim_year)
+
+# Get pids of individuals (aged 0-100) alive on 1st January over 1950-2100
+egos <- opop %>%
+  mutate(dod2 = if_else(dod == 0, 9999, dod)) %>%
+  filter(dob <= max(jan_months) & dod2 >= min(jan_months)) %>%
   pull(pid)
 
 # Check length of number of egos selected
-length(egos) # 429863
+length(egos) # 708240
 
+start <- Sys.time()
 # Retrieve pids of kin of individuals born 1950-2100
 kin_list <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
 save(kin_list, file = "kin_list.RData")
-# Time difference of 6.206231 hours
+end <- Sys.time()
+print(end-start)
+# Time difference of 4.390459 hours
 
 
 # Transform nested list into a tibble, using imap (indexed map)
@@ -70,11 +79,9 @@ kin <- kin_list %>%
   unnest(pids_kin) %>%
   filter(!is.na(pids_kin)) %>%
   select(pid_ego, kin_type, pid_kin = pids_kin) %>% 
-  ### CHECK IF THE LINES BELOW SHOULD REMAIN IN kin.RData OR ADDED AFTERWARDS
-  # Add sex and dates of birth and death of egos and their kin
   left_join(select(opop, c(pid, dob, dod, fem)), 
             by = join_by("pid_ego" == "pid")) %>% 
-  rename(dob_ego = dob, dod_ego = dod, fem_ego = fem) %>% 
+  rename(dob_ego = dob, dod_ego = dod, fem_ego = fem) %>% # dod = 0 for egos alive at the end
   left_join(select(opop, c(pid, dob, dod, fem)), 
             by = join_by("pid_kin" == "pid")) %>% 
   rename(dob_kin = dob, dod_kin = dod, fem_kin = fem)
@@ -118,7 +125,7 @@ mean_kin_birth %>%
         facet_wrap(~Sex)+
         theme_graphs() +
         scale_color_viridis_d(option = "D", direction =1)+
-        scale_x_continuous(breaks = c(1950, 2000, 2050, 2100))+
+        scale_x_continuous(breaks = c(1850, 1900, 1950, 2000, 2050, 2100))+
         labs(x = "Year", y = "Mean Number Alive at Birth", colour = "Kin")+
         theme(legend.title=element_blank())) %>% 
   cowplot::plot_grid(plotlist = .)
@@ -133,7 +140,7 @@ mean_kin_birth %>%
   geom_line(linewidth = 1) +
   theme_graphs() +
   scale_color_viridis_d(option = "A", direction =1)+
-  scale_x_continuous(breaks = c(1950, 2000, 2050, 2100))+
+  scale_x_continuous(breaks = c(1850, 1900, 1950, 2000, 2050, 2100))+
   labs(x = "Year", y = "Mean Number Alive at Birth", 
        colour = "Kin Type", linetype = "Kin Sex") +
   guides(colour = guide_legend(order = 1),
