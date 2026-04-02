@@ -66,3 +66,8 @@ theme_graphs2 <- function() {
 asYr <- function(month, last_month, final_sim_year) {
   return(final_sim_year - trunc((last_month - month)/12))
 }
+
+## Returns simulation month corresponding to January of a given calendar year
+jan <- function(year, last_month, final_sim_year){
+  return((last_month-11) - (final_sim_year - year)*12)
+}
