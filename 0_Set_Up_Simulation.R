@@ -8,7 +8,7 @@
 ## Run the SOCSIM simulation with the 'rsocsim' package and read the output .opop and .omar files
 
 # Created on 23-10-2024
-# Last modified on 25-03-2026
+# Last modified on 07-04-2026
 #------------------------------------------------------------------------------------------------------
 # SOCSIM simulation: input rates and assumptions ----
 
@@ -141,7 +141,7 @@ write_socsim_mortality_rates_WPP(Country = "SWE",
 # Create initial .opop and empty .omar file for the simulation ----
 
 # Set size of initial population
-size_opop <-  200000
+size_opop <-  100000
 
 # Create data.frame with 14 columns and nrows = size_opop
 presim.opop <- setNames(data.frame(matrix(data = 0, ncol = 14, nrow = size_opop)), 
@@ -220,7 +220,7 @@ end <- Sys.time()
 
 print(end-start)
 
-# Time difference of 2.896463 hours for 200000 individuals
+# Time difference of 1.366348 hours for 100000 individuals in the initial population
 
 #----------------------------------------------------------------------------------------------------
 ## Read the output .opop and .omar files ----
