@@ -1,14 +1,14 @@
 #------------------------------------------------------------------------------------------------------
-# SOCSIM - SOCSIM vs Demokin - Estimate Mean Number of Kin
-# U:/SOCSIM/SOCSIM_Demokin/2_Estimate_Mean_Kin.R
+# SOCSIM - SOCSIM vs Demokin -  Retrieve kinship network of individuals alive over 1950-2100
+# U:/SOCSIM/SOCSIM_Demokin/2_Retrieve_Kin.R
 
-## Estimate mean number of kin from a SOCSIM microsimulation (1950-2100)
+##  Retrieve kinship network of individuals alive over 1950-2100
 
 ## To run the following code, it is necessary to have already run the simulations and read the .opop file
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 01-04-2026
+# Last modified on 07-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -31,7 +31,7 @@ source("Functions/Functions_Kin.R")
 ## Load theme for the graphs and to convert SOCSIM time
 source("Functions/Functions_Graphs.R")
 #------------------------------------------------------------------------------------------------------
-## Retrieve kinship network of individuals born between 1950 and 2100 ----
+## Retrieve kinship network of individuals alive over 1950-2100 ----
 
 ## Load opop generated in 0_Set_Up_Simulation.R 
 load("opop.RData")
@@ -48,13 +48,14 @@ year_end   <- 2100
 jan_months <- jan(year_start:year_end, last_month, final_sim_year)
 
 # Get pids of individuals (aged 0-100) alive on 1st January over 1950-2100
+# Here, we are not including 1st January 2101 (those alive at the end of the simulation)
 egos <- opop %>%
   mutate(dod2 = if_else(dod == 0, 9999, dod)) %>%
   filter(dob <= max(jan_months) & dod2 >= min(jan_months)) %>%
   pull(pid)
 
 # Check length of number of egos selected
-length(egos) # 708240
+length(egos) # 463988
 
 start <- Sys.time()
 # Retrieve pids of kin of individuals born 1950-2100
@@ -62,7 +63,7 @@ kin_list <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf)
 save(kin_list, file = "kin_list.RData")
 end <- Sys.time()
 print(end-start)
-# Time difference of 4.390459 hours
+# Time difference of 3.293328 hours
 
 
 # Transform nested list into a tibble, using imap (indexed map)
@@ -88,7 +89,7 @@ kin <- kin_list %>%
 save(kin, file = "kin.RData")
 
 #------------------------------------------------------------------------------------------------------
-## Estimate mean number of kin alive at birth ----
+## Estimate mean number of kin alive at birth (as quick check) ----
 
 # Load df with pids of kin, and relevant information from opop, for individuals born 1750-2000
 load("kin.RData")
@@ -111,7 +112,7 @@ mean_kin_birth <- kin %>%
             by = "dob_ego_year") %>%
   mutate(mean_kin = n_kin / n_egos)
 
-# Check kin types in mean_kin_birth (No descendants should appear)
+# Check kin types in mean_kin_birth (No offspring should appear)
 mean_kin_birth %>% pull(kin_type) %>% unique()
 
 # Plot mean number of kin alive at birth, faceted by sex
@@ -139,11 +140,11 @@ mean_kin_birth %>%
   ggplot(aes(x= dob_ego_year, mean_kin, group = kin_type, colour = Generation, linetype = Sex)) +
   geom_line(linewidth = 1) +
   theme_graphs() +
-  scale_color_viridis_d(option = "A", direction =1)+
+  scale_color_viridis_d(option = "H", direction =1)+
   scale_x_continuous(breaks = c(1850, 1900, 1950, 2000, 2050, 2100))+
   labs(x = "Year", y = "Mean Number Alive at Birth", 
        colour = "Kin Type", linetype = "Kin Sex") +
   guides(colour = guide_legend(order = 1),
          linetype = guide_legend(order = 2))
-ggsave(file="Graphs/1_Mean_Number_Kin_Birth.jpeg", width=18, height=9, dpi=300)
-ggsave(file="Graphs/1_Mean_Number_Kin_Birth.pdf", width=18, height=9, dpi=300, device = "pdf")
+ggsave(file="Graphs/Mean_Number_Kin_Birth.jpeg", width=18, height=9, dpi=300)
+ggsave(file="Graphs/Mean_Number_Kin_Birth.pdf", width=18, height=9, dpi=300, device = "pdf")
