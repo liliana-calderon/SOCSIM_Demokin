@@ -5,11 +5,11 @@
 ## Estimate mean and distributions of numbers and ages of kin by age 
 # from a SOCSIM microsimulation for Sweden (1950-2100)
 
-## To run the following code, it is necessary to have already run the simulations and read the .opop file
+## To run the following code, it is necessary to have already run the simulations, read the .opop file
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 07-04-2026
+# Last modified on 08-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -26,14 +26,19 @@ library(ggh4x)  # To facet scales-
 #library(patchwork) # To combine ggplots
 #library(svglite) # To save svg files
 
-## Load function to retrieve selected kin and recode kin types
-source("Functions/Functions_Kin.R")
-
 ## Load theme for the graphs and to convert SOCSIM time to calendar years
 # and estimate months corresponding to January and December 
 source("Functions/Functions_Graphs.R")
+
+## Load function to retrieve selected kin and recode kin types
+source("Functions/Functions_Kin.R")
+
+## Load function to estimate age x year measures of kin from a SOCSIM microsimulation 
+# # It estimates kin alive by age at 1st January of the following year, 
+# based on fertility and mortality of a given year
+source("Functions/Functions_Estimates_Age_Year.R")
 #------------------------------------------------------------------------------------------------------
-## Load data, define constants and check dates ----
+## Load data and define constants ----
 
 ## Load opop generated in 0_Set_Up_Simulation.R 
 load("opop.RData")
@@ -42,23 +47,10 @@ load("opop.RData")
 load("kin.RData")
 
 # Define some constants 
-last_month <- opop %>% 
-  pull(dod) %>% 
-  max()
+last_month <- opop %>% pull(dod) %>% max()
 final_sim_year <- 2100
-
-# From the output pyramid:
-# months 1001 to 3400 correspond to pre-simulation (200 years)
-# to get stable population at 31-12-1949, with complete kinship networks
-asYr(1001, last_month, final_sim_year)
-asYr(3400, last_month, final_sim_year)
-
-# First month of simulation with actual fertility and mortality rates (1950)
-# corresponds to the end of Segment 1 in the result.pyr file
-jan(1950, last_month, final_sim_year)
-
 #------------------------------------------------------------------------------------------------------
-## Estimate mean and distributions of numbers and ages of kin by age at each 1st January ----
+## Prepare the ego_ages_year data with one row per calendar year and age
 
 # Create df with one row per calendar year and age, with months for January and birthday
 ego_ages_year <- opop %>%
@@ -69,7 +61,7 @@ ego_ages_year <- opop %>%
   mutate(dob_ego_year = asYr(dob_ego, last_month, final_sim_year),
          dod_ego_year = asYr(dod_ego2, last_month, final_sim_year)) %>%
   # Expand to one row per calendar year each ego lived through, over 1950-2100
-  crossing(year = 1950:2100) %>%
+  crossing(year = 1949:2100) %>%
   # Keep only years where ego was alive at least some months
   filter(year >= dob_ego_year & year <= dod_ego_year) %>%
   # Check if ego is alive at 1st January next year
@@ -88,104 +80,41 @@ ego_ages_year <- opop %>%
   select(pid_ego, fem_ego, dob_ego, year, year_next,
        month_jan, age_jan, month_jan_next, age_jan_next, dod_ego2)
 
+#----------------------------------------------------------------------------------------------------
+## Estimate mean and distributions of numbers and ages of kin by age at 1st January 1950 (31.12.1949) ----
+
 # Get all kin types sorted to be used in the function
 kin_types_all <- sort(unique(kin$kin_type))
 
-# Function to estimate the age x year measures to be processed by groups of years ----
-# This allow to handle the large number of rows 
-# resulting from a data frame with several ego-age-year rows for many kin
+# Map the function to all calendar years
+results <- estimates_age_year(year_start = 1949, year_end = 1949, 
+                              ego_ages_year = ego_ages_year)
+end_time <- Sys.time()
 
-estimates_age_year <- function(year_start, year_end) {
-  
-  cat("Processing years:", year_start, "-", year_end, "\n")
-  
-  # Filter ego_age_year to the selected years
-  ego_ages_year_sel <- ego_ages_year %>%
-    filter(year >= year_start & year <= year_end)
-  
-  # Get egos and kin for the selected years
-  pids_year <- ego_ages_year_sel %>% pull(pid_ego) %>% unique()
-  kin_year <- kin %>%
-    filter(pid_ego %in% pids_year) %>%
-    # 9999 as dod for ego alive at the end of the simulation
-    mutate(dod_ego2 = if_else(dod_ego == 0, 9999, dod_ego))
-  
-  # Join ego_ages_year with kin_year and calculate kin age and alive at 1st January
-  ego_ages_year_kin <- ego_ages_year_sel %>% 
-    left_join(kin_year, by = c("pid_ego", "fem_ego", "dob_ego"),
-              relationship = "many-to-many") %>%
-    filter(!is.na(kin_type)) %>%  # Remove NA rows from join
-    # Calculate months, age and living status at 1st January next year
-    mutate(# Set 9999 as dod for kin alive at the end of the simulation
-           dod_kin2 = if_else(dod_kin == 0, 9999, dod_kin),
-           year_next = year + 1,
-           # Month of 1st January next year
-           month_jan_next = jan(year + 1, last_month, final_sim_year),
-           # Ego age at 1st January next year
-           age_jan_next = floor((month_jan_next - dob_ego) / 12),
-           # kin age at 1st January next year (Calculate even for dead. Afterwards, we will weight by kin_alive_next 
-           kin_age_next = floor((month_jan_next - dob_kin) / 12),
-           # Kin alive at 1st January next year
-           kin_alive_next = if_else(month_jan_next >= dob_kin & month_jan_next < dod_kin2, 1L, 0L))
-  
-  # For each ego  mean numbers and ages of kin
-  # one row per ego x year_next x age_next x kin_type
-  ego_level <- ego_ages_year_kin %>%
-    group_by(year_next, age_jan_next, kin_type, pid_ego) %>%
-    summarise(n_kin_alive = sum(kin_alive_next, na.rm = TRUE),
-              sum_kin_age_alive = sum(kin_age_next * kin_alive_next, na.rm = TRUE),
-              .groups = "drop")
+# Combine and save means for 1950
+mean_number_age_stable <- results %>% map("mean_number_age") %>% bind_rows() 
+save(mean_number_age_stable, file = "Measures/mean_number_age_stable.RData")
 
-  # Mean numbers and ages of kin by egos' age at each 1st January at age +1
-  mean_number_age <- ego_level %>%
-    group_by(year_next, age_jan_next, kin_type) %>%
-    summarise(sum_kin_alive = sum(n_kin_alive, na.rm = TRUE),
-              sum_kin_age_alive = sum(sum_kin_age_alive, na.rm = TRUE),
-              .groups = "drop" ) %>%
-    # Complete with all possible combinations, to check individuals with 0 kin
-    complete(year_next = (year_start + 1):(year_end + 1),
-             age_jan_next = 0:100,
-             kin_type = kin_types_all,
-             fill = list(sum_kin_alive = 0, sum_kin_age_alive = 0)) %>%
-    # Add number of egos alive on 1st January by age as denominator for means
-    left_join(ego_ages_year_sel %>% # already filtered to egos alive at 1st Jan
-        group_by(year_next, age_jan_next) %>%
-        summarise(n_egos = n_distinct(pid_ego), .groups = "drop"),
-      by = c("year_next", "age_jan_next")) %>% 
-    mutate(mean_number = if_else(n_egos > 0, sum_kin_alive / n_egos, NA_real_),
-           # mean age among living kin (not among egos)
-           mean_kin_age = if_else(sum_kin_alive > 0, sum_kin_age_alive / sum_kin_alive, NA_real_) ) %>%
-    select(year_next, age_jan_next, kin_type, mean_number, mean_kin_age)
-  
-  # Distribution of numbers of kin per ego, by year and age
-  dist_number <- ego_level %>%
-    group_by(year_next, age_jan_next, kin_type, n_kin_alive) %>%
-    summarise(n_egos = n(), .groups = "drop") %>%
-    group_by(year_next, age_jan_next, kin_type) %>%
-    mutate(dist_number = n_egos / sum(n_egos)) %>%
-    ungroup()
-  
-  # Distribution of ages of living kin, by year and age
-  dist_age <- ego_ages_year_kin %>%
-    filter(kin_alive_next == 1L) %>%
-    mutate(kin_age_next = pmax(0L, kin_age_next)) %>% 
-    group_by(year_next, age_jan_next, kin_type, kin_age_next) %>%
-    summarise(n_kin = n(), .groups = "drop") %>%
-    group_by(year_next, age_jan_next, kin_type) %>%
-    mutate(dist_age = n_kin / sum(n_kin)) %>%
-    ungroup()
+# Combine and save distributions of numbers for 1950
+distribution_number_stable <- results %>% map("dist_number") %>% bind_rows()
+save(distribution_number_stable, file = "Measures/distribution_number_stable.RData")
 
-  return(list(mean_number_age = mean_number_age,
-              dist_number = dist_number,
-              dist_age = dist_age))
-}
+# Combine and save distributions of ages for 1950
+distribution_age_stable <- results %>% map("dist_age") %>% bind_rows()
+save(distribution_age_stable, file = "Measures/distribution_age_stable.RData")
 
 #----------------------------------------------------------------------------------------------------
-#### Map the function to all calendar years, combine and save the results ----
+## Estimate mean and distributions of numbers and ages of kin by age at every 1st January 1951-2101 ----
 
+# Get all kin types sorted to be used in the function
+kin_types_all <- sort(unique(kin$kin_type))
+
+#### Map the function to all calendar years, combine and save the results ----
 start_time <- Sys.time()
 # Map the function to all calendar years
-results <- map(1950:2100, ~ estimates_age_year(.x, .x), 
+results <- map(1950:2100, ~ estimates_age_year(year_start = .x, 
+                                               year_end = .x, 
+                                               ego_ages_year = ego_ages_year), 
                .progress = TRUE)
 end_time <- Sys.time()
 cat("Processing time:", end_time - start_time)
@@ -199,7 +128,7 @@ save(mean_number_age, file = "Measures/mean_number_age.RData")
 distribution_number <- results %>% map("dist_number") %>% bind_rows()
 save(distribution_number, file = "Measures/distribution_number.RData")
 
-# Combine and save distributions of numbers for all years
+# Combine and save distributions of ages for all years
 distribution_age <- results %>% map("dist_age") %>% bind_rows()
 save(distribution_age, file = "Measures/distribution_age.RData")
 
@@ -239,67 +168,3 @@ distribution_age %>%
   group_by(year_next, age_jan_next, kin_type) %>%
   summarise(s = sum(dist_age), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
-
-#----------------------------------------------------------------------------------------------------
-## Plot mean and distributions of numbers and ages of kin by age and year ----
-
-# Load mean number and ages of kin by age of Focal and calendar year
-load("Measures/mean_number_age.RData")
-
-# Load distribution of numbers kin by age of Focal and calendar year
-load("Measures/distribution_number.RData")
-
-# Load distribution of ages of kin by age of Focal and calendar year
-load("Measures/distribution_age.RData")
-
-# Plot the mean number of kin by age
-mean_number_age %>%
-  rename(Year = year_next, Age = age_jan_next)  %>%  
-  recode_kin() %>% 
-  ggplot(aes(x = Year, y = Age)) +
-  geom_tile(aes(fill = mean_number), linewidth = 0) + 
-  facet_wrap(~ kin_type, ncol = 4, dir = "v", axes = "all", scales = "free") +
-  scale_fill_viridis_c(option = "F", direction = -1,
-                       na.value = "grey90") + # The mean is NA when no egos exist at a given age_year
-  scale_x_continuous(breaks = seq(1950, 2100, 50)) +
-  labs(fill = "Mean Number of Kin (scaled)") +
-  theme_graphs() +
-  theme(legend.text = element_text(size = 14),
-        legend.key.height = unit(1, "cm"),
-        legend.key.width = unit(2, "cm"))
-ggsave("Graphs/Mean_Number_Kin_Age_Scaled.jpg", width = 20, height = 16,  dpi = 300)
-ggsave("Graphs/Mean_Number_Kin_Age_Scaled.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
-
-
-## Plot with different scales for each kin type
-
-# Compute max number per kin_type
-max_number_kin <- mean_number_age %>%
-  recode_kin() %>%
-  group_by(kin_type) %>%
-  summarise(max_val = max(mean_number, na.rm = TRUE),
-            .groups = "drop")
-
-# Split by kin type and plot with purrr
-plot_means <- mean_number_age %>% 
-  rename(Year = year_next, Age = age_jan_next) %>%
-  recode_kin() %>% 
-  left_join(max_number_kin, by = "kin_type") %>%
-  group_split(kin_type) %>%   
-  map(function(.) {
-    kin <- unique(.$kin_type)
-    max_kin <- unique(.$max_val)
-    ggplot(., aes(x = Year, y = Age)) +
-      geom_tile(aes(fill = mean_number), linewidth = 0) +
-      scale_fill_viridis_c(option = "F", direction = -1, na.value = "grey90",
-                            limits = c(0, max_kin), oob = scales::squish) +
-      scale_x_continuous(breaks = seq(1950, 2100, 50)) +
-      labs(title = kin, fill = "Mean Number") +
-      theme_graphs() +
-      theme(legend.text = element_text(size = 12),
-            legend.key.width = unit(1, "cm")) })
-
-wrap_plots(plot_means, ncol = 4, byrow = T)
-
-ggsave("Graphs/1_Mean_Number_Kin_Age.jpg", width = 20, height = 16,  dpi = 300)
-ggsave("Graphs/1_Mean_Number_Kin_Age.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
