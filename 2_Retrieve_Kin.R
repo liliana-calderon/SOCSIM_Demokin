@@ -30,6 +30,13 @@ source("Functions/Functions_Graphs.R")
 #------------------------------------------------------------------------------------------------------
 # Check months corresponding to presimulation and first year of simulation with actual rates (1950) ----
 
+## Load opop generated in 0_Set_Up_Simulation.R 
+load("opop.RData")
+
+# Define some constants 
+last_month <- opop %>% pull(dod) %>% max()
+final_sim_year <- 2100
+
 # Pre-simulation runs over 200 years, 1750-1949 (months 1001 to 3400)
 # to get stable population, with complete kinship networks, at the end of the first segment
 asYr(1001, last_month, final_sim_year)
@@ -43,13 +50,6 @@ jan(1951, last_month, final_sim_year)
 jan(2101, last_month, final_sim_year)
 #------------------------------------------------------------------------------------------------------
 ## Retrieve kinship network of individuals alive over 1950-2101 ----
-
-## Load opop generated in 0_Set_Up_Simulation.R 
-load("opop.RData")
-
-# Define some constants 
-last_month <- opop %>% pull(dod) %>% max()
-final_sim_year <- 2100
 
 # Define period of analysis
 year_start <- 1950
