@@ -2,13 +2,13 @@
 # SOCSIM - SOCSIM vs Demokin -  Retrieve kinship network of individuals alive over 1950-2100
 # U:/SOCSIM/SOCSIM_Demokin/2_Retrieve_Kin.R
 
-##  Retrieve kinship network of individuals alive over 1950-2100
+##  Retrieve kinship network of individuals alive over 1950-2100 from a SOCSIM microsimulation 
 
 ## To run the following code, it is necessary to have already run the simulations and read the .opop file
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 07-04-2026
+# Last modified on 08-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -21,9 +21,6 @@ options(scipen=9999)
 library(tidyverse)
 library(viridis)
 library(cowplot) # For separate legends of faceted plots
-#library(ggh4x)  # To facet scales-
-#library(patchwork) # To combine ggplots
-#library(svglite) # To save svg files
 
 ## Load function to retrieve selected kin and recode kin types
 source("Functions/Functions_Kin.R")
@@ -31,7 +28,21 @@ source("Functions/Functions_Kin.R")
 ## Load theme for the graphs and to convert SOCSIM time
 source("Functions/Functions_Graphs.R")
 #------------------------------------------------------------------------------------------------------
-## Retrieve kinship network of individuals alive over 1950-2100 ----
+# Check months corresponding to presimulation and first year of simulation with actual rates (1950) ----
+
+# Pre-simulation runs over 200 years, 1750-1949 (months 1001 to 3400)
+# to get stable population, with complete kinship networks, at the end of the first segment
+asYr(1001, last_month, final_sim_year)
+asYr(3400, last_month, final_sim_year)
+
+# To compare the stable setting, we use the population at 1st January 1950
+jan(1950, last_month, final_sim_year)
+
+# To compare the dynamic setting, we use the population at 1st January 1951-2101
+jan(1951, last_month, final_sim_year)
+jan(2101, last_month, final_sim_year)
+#------------------------------------------------------------------------------------------------------
+## Retrieve kinship network of individuals alive over 1950-2101 ----
 
 ## Load opop generated in 0_Set_Up_Simulation.R 
 load("opop.RData")
@@ -44,18 +55,18 @@ final_sim_year <- 2100
 year_start <- 1950
 year_end   <- 2100
 
-# Months for 1st Jan each year in the analysis window (1950-2100)
-jan_months <- jan(year_start:year_end, last_month, final_sim_year)
+# Months for 1st Jan each year over 1950-2100
+# Using year_end+1 to include individuals born over 2100 alive at the end of the simulation (01.01.2101)
+jan_months <- jan(year_start:(year_end+1), last_month, final_sim_year) 
 
-# Get pids of individuals (aged 0-100) alive on 1st January over 1950-2100
-# Here, we are not including 1st January 2101 (those alive at the end of the simulation)
+# Get pids of individuals (aged 0-100) alive on each 1st January over 1950-2101
 egos <- opop %>%
   mutate(dod2 = if_else(dod == 0, 9999, dod)) %>%
   filter(dob <= max(jan_months) & dod2 >= min(jan_months)) %>%
   pull(pid)
 
 # Check length of number of egos selected
-length(egos) # 463988
+length(egos) # 464821
 
 start <- Sys.time()
 # Retrieve pids of kin of individuals born 1950-2100
@@ -64,7 +75,6 @@ save(kin_list, file = "kin_list.RData")
 end <- Sys.time()
 print(end-start)
 # Time difference of 3.293328 hours
-
 
 # Transform nested list into a tibble, using imap (indexed map)
 # Get the vector of kin pids for each kin type (.x) 
@@ -91,7 +101,8 @@ save(kin, file = "kin.RData")
 #------------------------------------------------------------------------------------------------------
 ## Estimate mean number of kin alive at birth (as quick check) ----
 
-# Load df with pids of kin, and relevant information from opop, for individuals born 1750-2000
+# Load df with pids of kin and egos, and relevant information from opop (dob, dod, fem)
+# for individuals alive on each 1st January over 1950-2101
 load("kin.RData")
 
 # Calculate mean number of kin alive at ego's birth 
