@@ -42,9 +42,6 @@ final_sim_year <- 2100
 #------------------------------------------------------------------------------------------------------
 ## Load mean and distributions of numbers and ages of kin by age at 1st January 1950 ----
 
-# Get all kin types sorted to be used in the function
-kin_types_all <- sort(unique(kin$kin_type))
-
 # Load mean numbers and ages of kin on 01.01.1950
 load("Measures/mean_number_age_stable.RData")
 
@@ -54,6 +51,8 @@ load("Measures/distribution_number_stable.RData")
 # Combine and save distributions of ages of kin on 01.01.1950
 load("Measures/distribution_age_stable.RData")
 
+# Get all kin types sorted to be used in the function
+kin_types_all <- sort(unique(kin$kin_type))
 
 #------------------------------------------------------------------------------------------------------
 ## Plot mean and distributions of numbers and ages of kin by age at 1st January 1950 ----
@@ -101,6 +100,21 @@ plots_dist_number <- distribution_number_stable %>%
 
 cowplot::plot_grid(plotlist = plots_dist_number, ncol = 4)
 ggsave("Graphs/Distribution_Number_Kin_Age.jpg", width = 20, height = 16,  dpi = 300)
+
+# Distribution of ages of living kin at each age of Focal
+selected_ages <- c(0, 20, 40, 60, 80)
+
+distribution_age_stable %>%
+  rename(Age = age_jan_next) %>%
+  filter(Age %in% selected_ages) %>%  # Age is age_jan_next renamed
+  recode_kin() %>%
+  ggplot(aes(x = kin_age_next, y = dist_age)) +
+  geom_col(position = "dodge", width = 1) +
+  facet_grid(kin_type ~ Age, scales = "free_y") +
+  labs(x = "Ages of kin", y = "Proportion of kin by age") +
+  #scale_fill_viridis_d(option = "A", direction = -1) +
+  theme_graphs()
+ggsave("Graphs/Distribution_Kin_Age_By_Focal_Age.jpg", width = 20, height = 16, dpi = 300)
 
 #------------------------------------------------------------------------------------------------------
 ## Load mean and distributions of numbers and ages of kin by age and year ----
