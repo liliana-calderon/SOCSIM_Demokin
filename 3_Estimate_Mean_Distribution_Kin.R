@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 08-04-2026
+# Last modified on 09-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -22,7 +22,6 @@ library(tidyverse)
 library(viridis)
 library(cowplot) # For separate legends of facetted plots
 library(ggh4x)  # To facet scales-
-#library(metR) # To label the contours
 #library(patchwork) # To combine ggplots
 #library(svglite) # To save svg files
 
@@ -34,7 +33,7 @@ source("Functions/Functions_Graphs.R")
 source("Functions/Functions_Kin.R")
 
 ## Load function to estimate age x year measures of kin from a SOCSIM microsimulation 
-# # It estimates kin alive by age at 1st January of the following year, 
+# It estimates kin alive by age at 1st January of the following year, 
 # based on fertility and mortality of a given year
 source("Functions/Functions_Estimates_Age_Year.R")
 #------------------------------------------------------------------------------------------------------
@@ -60,7 +59,7 @@ ego_ages_year <- opop %>%
   # Calculate birth year and death year for each ego
   mutate(dob_ego_year = asYr(dob_ego, last_month, final_sim_year),
          dod_ego_year = asYr(dod_ego2, last_month, final_sim_year)) %>%
-  # Expand to one row per calendar year each ego lived through, over 1950-2100
+  # Expand to one row per calendar year each ego lived through, over 1949-2100
   crossing(year = 1949:2100) %>%
   # Keep only years where ego was alive at least some months
   filter(year >= dob_ego_year & year <= dod_ego_year) %>%
@@ -86,21 +85,20 @@ ego_ages_year <- opop %>%
 # Get all kin types sorted to be used in the function
 kin_types_all <- sort(unique(kin$kin_type))
 
-# Map the function to all calendar years
+# Apply the function to year 1949 to get measures for 1st January 1950
 results <- estimates_age_year(year_start = 1949, year_end = 1949, 
                               ego_ages_year = ego_ages_year)
-end_time <- Sys.time()
 
-# Combine and save means for 1950
-mean_number_age_stable <- results %>% map("mean_number_age") %>% bind_rows() 
+# Extract and save means for 1st January 1950
+mean_number_age_stable <- results$mean_number_age
 save(mean_number_age_stable, file = "Measures/mean_number_age_stable.RData")
 
-# Combine and save distributions of numbers for 1950
-distribution_number_stable <- results %>% map("dist_number") %>% bind_rows()
+# Extract and save distributions of numbers for 1st January 1950
+distribution_number_stable <- results$dist_number
 save(distribution_number_stable, file = "Measures/distribution_number_stable.RData")
 
-# Combine and save distributions of ages for 1950
-distribution_age_stable <- results %>% map("dist_age") %>% bind_rows()
+# Extract and save distributions of ages for 1st January 1950
+distribution_age_stable <- results$dist_age
 save(distribution_age_stable, file = "Measures/distribution_age_stable.RData")
 
 #----------------------------------------------------------------------------------------------------
@@ -158,13 +156,24 @@ mean_number_age %>%
 # The mean age of kin is NA when the mean number o kin is 0 or NA at a given age_year
 
 # dist_number should sum to 1 per (year_next, age_jan_next, kin_type)
-distribution_number %>%
+distribution_number %>% 
   group_by(year_next, age_jan_next, kin_type) %>%
   summarise(s = sum(dist_number), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
 
 # dist_age should sum to 1 per (year_next, age_jan_next, kin_type)
-distribution_age %>%
+distribution_age %>% 
   group_by(year_next, age_jan_next, kin_type) %>%
   summarise(s = sum(dist_age), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
+
+# Diagnostic: verify distribution sums to 1 per (year_next, age_jan_next, kin_type)
+dist_check_stable <- distribution_number_stable %>%
+  group_by(year_next, age_jan_next, kin_type) %>%
+  summarise(s = sum(dist_number), .groups = "drop")
+if (any(abs(dist_check_stable$s - 1) > 1e-9, na.rm = TRUE)) {
+  warning("distribution_number_stable: some groups do not sum to 1. Max deviation: ",
+          max(abs(dist_check_stable$s - 1), na.rm = TRUE))
+} else {
+  cat("distribution_number_stable: all groups sum to 1. OK\n")
+}
