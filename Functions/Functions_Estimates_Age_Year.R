@@ -52,7 +52,7 @@ estimates_age_year <- function(year_start, year_end, ego_ages_year) {
   
   
   # Create complete ego_level df with one row per ego-year-age-kin type
-  # including 0 values for egos with no kin of a given type, to be used for mean and distribution calculations
+  # including 0 values for egos with no kin of a given type, to be used as denominator for distributions
   ego_level <- ego_ages_year_sel %>%
     distinct(pid_ego, year_next, age_jan_next) %>% 
     # Complete with all possible combinations of year_age_kin, to check individuals with 0 kin
