@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 08-04-2026
+# Last modified on 09-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -74,7 +74,7 @@ kin_list <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf)
 save(kin_list, file = "kin_list.RData")
 end <- Sys.time()
 print(end-start)
-# Time difference of 3.293328 hours
+# Time difference of 5.68921 hours
 
 # Transform nested list into a tibble, using imap (indexed map)
 # Get the vector of kin pids for each kin type (.x) 
