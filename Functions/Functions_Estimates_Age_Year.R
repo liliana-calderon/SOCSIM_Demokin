@@ -42,13 +42,29 @@ estimates_age_year <- function(year_start, year_end, ego_ages_year) {
       # Kin alive at 1st January next year
       kin_alive_next = if_else(month_jan_next >= dob_kin & month_jan_next < dod_kin2, 1L, 0L))
   
-  # For each ego  mean numbers and ages of kin
-  # one row per ego x year_next x age_next x kin_type
-  ego_level <- ego_ages_year_kin %>%
+  # For each ego, sum kin counts per (year_next, age_jan_next, kin_type)
+  # Only egos that appear in kin_year contribute here; egos with no kin records
+  # for a given type are handled in the completion step below.
+  ego_level_from_kin <- ego_ages_year_kin %>%
     group_by(year_next, age_jan_next, kin_type, pid_ego) %>%
     summarise(n_kin_alive = sum(kin_alive_next, na.rm = TRUE),
               sum_kin_age_alive = sum(kin_age_next * kin_alive_next, na.rm = TRUE),
               .groups = "drop")
+
+  # All egos alive at each (year_next, age_jan_next) — the correct universe for the
+  # distribution denominator.  Egos who have no kin records for a given kin_type
+  # truly have 0 living kin of that type and must be counted as n_kin_alive = 0.
+  ego_alive_per_age <- ego_ages_year_sel %>%
+    distinct(pid_ego, year_next, age_jan_next)
+
+  # Complete ego_level: every alive ego × every kin type.
+  # Missing combinations (no kin records) receive n_kin_alive = 0.
+  ego_level <- ego_alive_per_age %>%
+    crossing(kin_type = kin_types_all) %>%
+    left_join(ego_level_from_kin,
+              by = c("pid_ego", "year_next", "age_jan_next", "kin_type")) %>%
+    mutate(n_kin_alive       = replace_na(n_kin_alive, 0L),
+           sum_kin_age_alive = replace_na(sum_kin_age_alive, 0))
   
   # Mean numbers and ages of kin by egos' age at each 1st January at age +1
   mean_number_age <- ego_level %>%

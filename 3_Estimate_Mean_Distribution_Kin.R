@@ -92,16 +92,27 @@ results <- estimates_age_year(year_start = 1949, year_end = 1949,
 end_time <- Sys.time()
 
 # Combine and save means for 1950
-mean_number_age_stable <- results %>% map("mean_number_age") %>% bind_rows() 
+mean_number_age_stable <- results[["mean_number_age"]]
 save(mean_number_age_stable, file = "Measures/mean_number_age_stable.RData")
 
 # Combine and save distributions of numbers for 1950
-distribution_number_stable <- results %>% map("dist_number") %>% bind_rows()
+distribution_number_stable <- results[["dist_number"]]
 save(distribution_number_stable, file = "Measures/distribution_number_stable.RData")
 
 # Combine and save distributions of ages for 1950
-distribution_age_stable <- results %>% map("dist_age") %>% bind_rows()
+distribution_age_stable <- results[["dist_age"]]
 save(distribution_age_stable, file = "Measures/distribution_age_stable.RData")
+
+# Diagnostic: verify distribution sums to 1 per (year_next, age_jan_next, kin_type)
+dist_check_stable <- distribution_number_stable %>%
+  group_by(year_next, age_jan_next, kin_type) %>%
+  summarise(s = sum(dist_number), .groups = "drop")
+if (any(abs(dist_check_stable$s - 1) > 1e-9, na.rm = TRUE)) {
+  warning("distribution_number_stable: some groups do not sum to 1. Max deviation: ",
+          max(abs(dist_check_stable$s - 1), na.rm = TRUE))
+} else {
+  cat("distribution_number_stable: all groups sum to 1. OK\n")
+}
 
 #----------------------------------------------------------------------------------------------------
 ## Estimate mean and distributions of numbers and ages of kin by age at every 1st January 1951-2101 ----
@@ -131,6 +142,17 @@ save(distribution_number, file = "Measures/distribution_number.RData")
 # Combine and save distributions of ages for all years
 distribution_age <- results %>% map("dist_age") %>% bind_rows()
 save(distribution_age, file = "Measures/distribution_age.RData")
+
+# Diagnostic: verify distribution sums to 1 per (year_next, age_jan_next, kin_type)
+dist_check <- distribution_number %>%
+  group_by(year_next, age_jan_next, kin_type) %>%
+  summarise(s = sum(dist_number), .groups = "drop")
+if (any(abs(dist_check$s - 1) > 1e-9, na.rm = TRUE)) {
+  warning("distribution_number: some groups do not sum to 1. Max deviation: ",
+          max(abs(dist_check$s - 1), na.rm = TRUE))
+} else {
+  cat("distribution_number: all groups sum to 1. OK\n")
+}
 
 #----------------------------------------------------------------------------------------------------
 ## Quick checks of the results ----
