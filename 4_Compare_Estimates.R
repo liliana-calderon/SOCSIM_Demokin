@@ -164,7 +164,7 @@ ggsave("Graphs/Distribution_Age_Kin_Stable.jpg", width = 20, height = 16, dpi = 
 ggsave("Graphs/Distribution_Age_Kin_Stable.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
-## Load mean and distributions of numbers and ages of kin by age and year ----
+## Load mean and distributions of numbers and ages of kin by age and year (dynamic) ----
 
 # Load mean number and ages of kin by age of Focal and calendar year
 load("Measures/mean_number_age.RData")
