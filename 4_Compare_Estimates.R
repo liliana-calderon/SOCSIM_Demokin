@@ -27,35 +27,34 @@ source("Functions/Functions_Kin.R")
 ## Load theme for the graphs and to convert SOCSIM time to calendar years
 # and estimate months corresponding to January and December 
 source("Functions/Functions_Graphs.R")
+
 #------------------------------------------------------------------------------------------------------
-## Load data and define constants ----
+## Load opop, means and distributions of kin by age and year and define constants -----
+# Results for 01.01.1950 correspond to the stable setting
+# Results for 01.01.1951-01.01.2101 correspond to the dynamic setting
 
-## Load opop generated in 0_Set_Up_Simulation.R 
+## Load opop generated in 0_Set_Up_Simulation.R ##
 load("opop.RData")
-
-# Load df with pids of kin, and information from opop, for individuals born 1950-2100
-load("kin.RData")
 
 # Define some constants 
 last_month <- opop %>% pull(dod) %>% max()
 final_sim_year <- 2100
-#------------------------------------------------------------------------------------------------------
-## Load mean and distributions of numbers and ages of kin by age at 1st January 1950 ----
 
-# Load mean numbers and ages of kin on 01.01.1950
-load("Measures/mean_number_age_stable.RData")
+# Load mean numbers and ages for all years
+load("Measures/mean_number_age.RData")
 
-# Combine and save distributions of numbers of kin on 01.01.1950
-load("Measures/distribution_number_stable.RData")
+# Load distributions of numbers for all years
+load("Measures/distribution_number.RData")
 
-# Combine and save distributions of ages of kin on 01.01.1950
-load("Measures/distribution_age_stable.RData")
+# Load distributions of ages for all years
+load("Measures/distribution_age.RData")
 
 #------------------------------------------------------------------------------------------------------
 ## Plot mean and distributions of numbers and ages of kin by age at 1st January 1950 ----
 
 ## Mean number of kin at each age of Focal  
-mean_number_age_stable %>% 
+mean_number_age %>% 
+  filter(year_next == 1950) %>% 
   rename(Age = age_jan_next) %>%
   filter(!is.na(mean_number)) %>% 
   recode_kin() %>%
@@ -69,7 +68,8 @@ ggsave("Graphs/Mean_Number_Kin_Stable.pdf", width = 20, height = 16,  dpi = 300,
 
 
 ## Mean age of kin at each age of Focal
-mean_number_age_stable %>%
+mean_number_age %>% 
+  filter(year_next == 1950) %>% 
   rename(Age = age_jan_next) %>%
   filter(!is.na(mean_kin_age)) %>% 
   recode_kin() %>%
@@ -85,8 +85,9 @@ ggsave("Graphs/Mean_Age_Kin_Stable.pdf", width = 20, height = 16,  dpi = 300, de
 
 ## Distribution of the number of kin at each age of Focal
 
-plots_dist_number <- 
-  distribution_number_stable %>%
+plots_dist_number_stable <- 
+  distribution_number %>%
+  filter(year_next == 1950) %>% 
   rename(Age = age_jan_next) %>%
   recode_kin() %>%
   group_split(kin_type) %>%
@@ -101,7 +102,7 @@ plots_dist_number <-
       theme(legend.position = 'none')
   })
 
-cowplot::plot_grid(plotlist = plots_dist_number, ncol = 4)
+cowplot::plot_grid(plotlist = plots_dist_number_stable, ncol = 4)
 ggsave("Graphs/Distribution_Number_Kin_Stable.jpg", width = 20, height = 16,  dpi = 300)
 ggsave("Graphs/Distribution_Number_Kin_Stable.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
@@ -120,7 +121,8 @@ wtd_quant <- function(x, w, prob = 0.75) {
   df$x[which(cumw >= cutoff)[1]]
 }
 
-distribution_number_stable %>%
+distribution_number %>%
+  filter(year_next == 1950) %>% 
   recode_kin() %>% 
   group_by(year_next, age_jan_next, kin_type) %>%
   # Find the 75th percentile of the distribution of kin numbers
@@ -150,7 +152,8 @@ ggsave("Graphs/Proportion_Null_Large_Stable.pdf", width = 20, height = 16, dpi =
 ## Distribution of ages of living kin at each age of Focal
 selected_ages <- c(0, 20, 40, 60, 80)
 
-distribution_age_stable %>%
+distribution_age %>%
+  filter(year_next == 1950) %>% 
   rename(Age = age_jan_next) %>%
   filter(Age %in% selected_ages) %>% 
   recode_kin() %>%
@@ -164,30 +167,20 @@ ggsave("Graphs/Distribution_Age_Kin_Stable.jpg", width = 20, height = 16, dpi = 
 ggsave("Graphs/Distribution_Age_Kin_Stable.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
-## Load mean and distributions of numbers and ages of kin by age and year (dynamic) ----
-
-# Load mean number and ages of kin by age of Focal and calendar year
-load("Measures/mean_number_age.RData")
-
-# Load distribution of numbers kin by age of Focal and calendar year
-load("Measures/distribution_number.RData")
-
-# Load distribution of ages of kin by age of Focal and calendar year
-load("Measures/distribution_age.RData")
-
-#------------------------------------------------------------------------------------------------------
-## Plot the mean number of kin at each age of Focal -----
+## Plot the mean number of kin at each age of Focal for each calendar year -----
 # Using different scales for each kin type 
 
 # Compute max number per kin_type
 max_number_kin <- mean_number_age %>%
+  filter(year_next > 1950) %>% 
   recode_kin() %>%
   group_by(kin_type) %>%
   summarise(max_val = max(mean_number, na.rm = TRUE),
             .groups = "drop")
 
 # Split by kin type and plot with purrr
-plot_means <- mean_number_age %>% 
+plot_mean_numbers <- mean_number_age %>% 
+  filter(year_next > 1950) %>% 
   rename(Year = year_next, Age = age_jan_next) %>%
   recode_kin() %>% 
   left_join(max_number_kin, by = "kin_type") %>%
@@ -206,6 +199,6 @@ plot_means <- mean_number_age %>%
             legend.key.width = unit(1, "cm")) })
 
 # Wrap the plots for each kin
-cowplot::plot_grid(plotlist = plots_means, ncol = 4)
-ggsave("Graphs/1_Mean_Number_Kin_Age.jpg", width = 20, height = 16,  dpi = 300)
-ggsave("Graphs/1_Mean_Number_Kin_Age.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
+cowplot::plot_grid(plotlist = plot_mean_numbers, ncol = 4)
+ggsave("Graphs/Mean_Number_Kin_Age_Time.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Mean_Number_Kin_Age_Time.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
