@@ -80,39 +80,21 @@ ego_ages_year <- opop %>%
        month_jan, age_jan, month_jan_next, age_jan_next, dod_ego2)
 
 #----------------------------------------------------------------------------------------------------
-## Estimate mean and distributions of numbers and ages of kin by age at 1st January 1950 (31.12.1949) ----
-
-# Apply the function to year 1949 to get measures for 1st January 1950
-results <- estimates_age_year(year_start = 1949, year_end = 1949, 
-                              ego_ages_year = ego_ages_year, 
-                              kin = kin)
-
-# Extract and save means for 1st January 1950
-mean_number_age_stable <- results$mean_number_age
-save(mean_number_age_stable, file = "Measures/mean_number_age_stable.RData")
-
-# Extract and save distributions of numbers for 1st January 1950
-distribution_number_stable <- results$dist_number
-save(distribution_number_stable, file = "Measures/distribution_number_stable.RData")
-
-# Extract and save distributions of ages for 1st January 1950
-distribution_age_stable <- results$dist_age
-save(distribution_age_stable, file = "Measures/distribution_age_stable.RData")
-
-#----------------------------------------------------------------------------------------------------
-## Estimate mean and distributions of numbers and ages of kin by age at every 1st January 1951-2101 ----
+## Estimate mean and distributions of numbers and ages of kin by age at every 1st January 1950-2101 ----
+# Results for 01.01.1950 correspond to the stable setting
+# Results for 01.01.1951-01.01.2101 correspond to the dynamic setting
 
 #### Map the function to all calendar years, combine and save the results ----
 start_time <- Sys.time()
 # Map the function to all calendar years
-results <- map(1950:2100, ~ estimates_age_year(year_start = .x, 
+results <- map(1949:2100, ~ estimates_age_year(year_start = .x, 
                                                year_end = .x, 
                                                ego_ages_year = ego_ages_year, 
                                                kin = kin), 
                .progress = TRUE)
 end_time <- Sys.time()
 cat("Processing time:", end_time - start_time)
-# Processing time: 1.221339 hours
+# Processing time: 1.678384 hours
 
 # Combine and save means for all years
 mean_number_age <- results %>% map("mean_number_age") %>% bind_rows() 
@@ -142,14 +124,16 @@ mean_number_age %>%
 mean_number_age %>% 
   filter(is.na(mean_number)) %>% 
   distinct(year_next, age_jan_next) %>% 
-  print(n=50)
+  pull(age_jan_next) %>% 
+  unique()
 # The mean number is NA when no egos exist at a given age_year (age_jan_next 100)
 
 # Check where mean_kin_age is NA
 mean_number_age %>% 
   filter(is.na(mean_kin_age)) %>% 
+  # The mean age of kin is NA when the mean number of kin is 0 or NA at a given age_year
+  # So filtering these cases would confirm if there are other cases with NA mean_kin_age
   filter(mean_number != 0 & !is.na(mean_number))
-# The mean age of kin is NA when the mean number o kin is 0 or NA at a given age_year
 
 # dist_number should sum to 1 per (year_next, age_jan_next, kin_type)
 distribution_number %>% 
@@ -162,14 +146,3 @@ distribution_age %>%
   group_by(year_next, age_jan_next, kin_type) %>%
   summarise(s = sum(dist_age), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
-
-# Diagnostic: verify distribution sums to 1 per (year_next, age_jan_next, kin_type)
-dist_check_stable <- distribution_number_stable %>%
-  group_by(year_next, age_jan_next, kin_type) %>%
-  summarise(s = sum(dist_number), .groups = "drop")
-if (any(abs(dist_check_stable$s - 1) > 1e-9, na.rm = TRUE)) {
-  warning("distribution_number_stable: some groups do not sum to 1. Max deviation: ",
-          max(abs(dist_check_stable$s - 1), na.rm = TRUE))
-} else {
-  cat("distribution_number_stable: all groups sum to 1. OK\n")
-}
