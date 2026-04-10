@@ -7,9 +7,9 @@
 # based on fertility and mortality of a given year
 
 # Created on 27-03-2026
-# Last modified on 08-04-2026
+# Last modified on 10-04-2026
 #----------------------------------------------------------------------------------------------------
-estimates_age_year <- function(year_start, year_end, ego_ages_year) {
+estimates_age_year <- function(year_start, year_end, ego_ages_year, kin) {
   
   cat("Processing years:", year_start, "-", year_end, "\n")
   
@@ -17,12 +17,17 @@ estimates_age_year <- function(year_start, year_end, ego_ages_year) {
   ego_ages_year_sel <- ego_ages_year %>%
     filter(year >= year_start & year <= year_end)
   
-  # Get egos and kin for the selected years
+  # Get egos for the selected years
   pids_year <- ego_ages_year_sel %>% pull(pid_ego) %>% unique()
+  
+  # Get kin for the selected years
   kin_year <- kin %>%
     filter(pid_ego %in% pids_year) %>%
     # 9999 as dod for ego alive at the end of the simulation
     mutate(dod_ego2 = if_else(dod_ego == 0, 9999, dod_ego))
+  
+  # Get all kin types sorted for completion
+  kin_types_all <- sort(unique(kin$kin_type))
   
   # Join ego_ages_year with kin_year and calculate kin age and alive at 1st January
   ego_ages_year_kin <- ego_ages_year_sel %>% 
