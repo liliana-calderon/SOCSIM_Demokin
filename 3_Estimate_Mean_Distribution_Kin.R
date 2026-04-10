@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 09-04-2026
+# Last modified on 10-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -82,12 +82,10 @@ ego_ages_year <- opop %>%
 #----------------------------------------------------------------------------------------------------
 ## Estimate mean and distributions of numbers and ages of kin by age at 1st January 1950 (31.12.1949) ----
 
-# Get all kin types sorted to be used in the function
-kin_types_all <- sort(unique(kin$kin_type))
-
 # Apply the function to year 1949 to get measures for 1st January 1950
 results <- estimates_age_year(year_start = 1949, year_end = 1949, 
-                              ego_ages_year = ego_ages_year)
+                              ego_ages_year = ego_ages_year, 
+                              kin = kin)
 
 # Extract and save means for 1st January 1950
 mean_number_age_stable <- results$mean_number_age
@@ -104,15 +102,13 @@ save(distribution_age_stable, file = "Measures/distribution_age_stable.RData")
 #----------------------------------------------------------------------------------------------------
 ## Estimate mean and distributions of numbers and ages of kin by age at every 1st January 1951-2101 ----
 
-# Get all kin types sorted to be used in the function
-kin_types_all <- sort(unique(kin$kin_type))
-
 #### Map the function to all calendar years, combine and save the results ----
 start_time <- Sys.time()
 # Map the function to all calendar years
 results <- map(1950:2100, ~ estimates_age_year(year_start = .x, 
                                                year_end = .x, 
-                                               ego_ages_year = ego_ages_year), 
+                                               ego_ages_year = ego_ages_year, 
+                                               kin = kin), 
                .progress = TRUE)
 end_time <- Sys.time()
 cat("Processing time:", end_time - start_time)

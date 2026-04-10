@@ -6,7 +6,7 @@
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
 
 # Created on 08-04-2026
-# Last modified on 08-04-2026
+# Last modified on 10-04-2026
 #------------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -51,14 +51,11 @@ load("Measures/distribution_number_stable.RData")
 # Combine and save distributions of ages of kin on 01.01.1950
 load("Measures/distribution_age_stable.RData")
 
-# Get all kin types sorted to be used in the function
-kin_types_all <- sort(unique(kin$kin_type))
-
 #------------------------------------------------------------------------------------------------------
 ## Plot mean and distributions of numbers and ages of kin by age at 1st January 1950 ----
 
-# Mean number of kin at each age of Focal  
-mean_number_age_stable %>%
+## Mean number of kin at each age of Focal  
+mean_number_age_stable %>% 
   rename(Age = age_jan_next) %>%
   filter(!is.na(mean_number)) %>% 
   recode_kin() %>%
@@ -67,8 +64,11 @@ mean_number_age_stable %>%
   labs(x = "Age of focal individual", y = "Mean number of living kin", color = "Kin type") +
   scale_color_viridis_d(option = "D", direction =1)+
   theme_graphs()
+ggsave("Graphs/Mean_Number_Kin_Stable.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Mean_Number_Kin_Stable.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
-# Mean age of kin at each age of Focal
+
+## Mean age of kin at each age of Focal
 mean_number_age_stable %>%
   rename(Age = age_jan_next) %>%
   filter(!is.na(mean_kin_age)) %>% 
@@ -79,19 +79,22 @@ mean_number_age_stable %>%
   labs(x = "Age of focal individual", y = "Mean age of living kin", color = "Kin type") +
   scale_color_viridis_d(option = "D", direction = 1) +
   theme_graphs()
+ggsave("Graphs/Mean_Age_Kin_Stable.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Mean_Age_Kin_Stable.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
-# Distribution of the number of kin at each age of Focal
 
-# Split and plot each kin type separately
-plots_dist_number <- distribution_number_stable %>%
+## Distribution of the number of kin at each age of Focal
+
+plots_dist_number <- 
+  distribution_number_stable %>%
   rename(Age = age_jan_next) %>%
   recode_kin() %>%
-  mutate(n_kin_alive = as.factor(n_kin_alive)) %>%
   group_split(kin_type) %>%
   map(function(df) {
     kin <- unique(df$kin_type)
-    ggplot(df, aes(x = Age, y = dist_number, fill = n_kin_alive)) +
-      geom_area(color = "#4D4D4D", linewidth = 0.3) +
+    ggplot(df, aes(x = Age, y = dist_number, fill = as.factor(n_kin_alive))) +
+      # Using geom_col instead of geom_area to avoid getting fake values > 1 when stacking
+      geom_col(position = "stack", width = 1) + 
       labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
       scale_fill_viridis_d(option = "F", direction = -1) +
       theme_graphs() +
@@ -99,22 +102,66 @@ plots_dist_number <- distribution_number_stable %>%
   })
 
 cowplot::plot_grid(plotlist = plots_dist_number, ncol = 4)
-ggsave("Graphs/Distribution_Number_Kin_Age.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Distribution_Number_Kin_Stable.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Distribution_Number_Kin_Stable.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
-# Distribution of ages of living kin at each age of Focal
+
+## Proportion of individuals with null or large kin sets
+
+# Helper to calculate a point for large kin sets based on the 75q of the distribution
+wtd_quant <- function(x, w, prob = 0.75) {
+  # Remove values where weight is NA or zero
+  df <- tibble::tibble(x = x, w = w) %>%
+    filter(!is.na(x), !is.na(w), w > 0) %>%
+    arrange(x)
+  if (nrow(df) == 0) return(NA_real_)
+  cumw <- cumsum(df$w)
+  cutoff <- prob * sum(df$w)
+  df$x[which(cumw >= cutoff)[1]]
+}
+
+distribution_number_stable %>%
+  recode_kin() %>% 
+  group_by(year_next, age_jan_next, kin_type) %>%
+  # Find the 75th percentile of the distribution of kin numbers
+  summarise(large_cut = wtd_quant(n_kin_alive, dist_number, 0.75),
+            prop_zero  = sum(dist_number[n_kin_alive == 0], na.rm = TRUE),
+            prop_large = sum(dist_number[n_kin_alive >= large_cut], na.rm = TRUE),
+            .groups = "drop") %>%
+  pivot_longer(c(prop_zero, prop_large),
+               names_to = "kin_size",
+               values_to = "proportion") %>% 
+  ggplot(aes(x = age_jan_next, y = proportion, color = kin_type, linetype = kin_size)) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~ kin_type, ncol = 2) +
+  labs(x = "Age of focal individual", 
+       y = "Proportion", 
+       color = "Kin type",
+       linetype = "Kin size") +
+  scale_color_viridis_d(option = "F", direction = 1) +
+  scale_linetype_manual(
+    values = c("dashed", "solid"), 
+    labels = c("Null kin", "Large Kin (≥ 75th per)") ) +
+  theme_graphs()
+ggsave("Graphs/Proportion_Null_Large_Stable.jpg", width = 20, height = 16, dpi = 300)
+ggsave("Graphs/Proportion_Null_Large_Stable.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
+
+
+## Distribution of ages of living kin at each age of Focal
 selected_ages <- c(0, 20, 40, 60, 80)
 
 distribution_age_stable %>%
   rename(Age = age_jan_next) %>%
-  filter(Age %in% selected_ages) %>%  # Age is age_jan_next renamed
+  filter(Age %in% selected_ages) %>% 
   recode_kin() %>%
-  ggplot(aes(x = kin_age_next, y = dist_age)) +
+  ggplot(aes(x = kin_age_next, y = dist_age, fill = kin_type)) +
   geom_col(position = "dodge", width = 1) +
   facet_grid(kin_type ~ Age, scales = "free_y") +
-  labs(x = "Ages of kin", y = "Proportion of kin by age") +
-  #scale_fill_viridis_d(option = "A", direction = -1) +
+  labs(x = "Ages of kin", y = "Proportion of kin", fill = "Kin type") +
+  scale_fill_viridis_d(option = "D", direction = 1) +
   theme_graphs()
-ggsave("Graphs/Distribution_Kin_Age_By_Focal_Age.jpg", width = 20, height = 16, dpi = 300)
+ggsave("Graphs/Distribution_Age_Kin_Stable.jpg", width = 20, height = 16, dpi = 300)
+ggsave("Graphs/Distribution_Age_Kin_Stable.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
 ## Load mean and distributions of numbers and ages of kin by age and year ----
@@ -129,7 +176,8 @@ load("Measures/distribution_number.RData")
 load("Measures/distribution_age.RData")
 
 #------------------------------------------------------------------------------------------------------
-## Plot the mean number of kin by age with different scales for each kin type -----
+## Plot the mean number of kin at each age of Focal -----
+# Using different scales for each kin type 
 
 # Compute max number per kin_type
 max_number_kin <- mean_number_age %>%
