@@ -6,7 +6,7 @@
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
 
 # Created on 08-04-2026
-# Last modified on 10-04-2026
+# Last modified on 17-04-2026
 #------------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -109,15 +109,14 @@ ggsave("Graphs/Distribution_Number_Kin_Stable.pdf", width = 20, height = 16,  dp
 
 ## Proportion of individuals with null or large kin sets
 
-# Helper to calculate a point for large kin sets based on the 75q of the distribution
-wtd_quant <- function(x, w, prob = 0.75) {
-  # Remove values where weight is NA or zero
-  df <- tibble::tibble(x = x, w = w) %>%
-    filter(!is.na(x), !is.na(w), w > 0) %>%
+# Helper function to calculate the cut point for large kin sets based on the 75 quantile of the distribution
+wtd_quant <- function(x, w, quant = 0.75) {
+  df <- tibble(x = x, w = w) %>%
+    filter(!is.na(x) & !is.na(w) & w > 0) %>%
     arrange(x)
   if (nrow(df) == 0) return(NA_real_)
   cumw <- cumsum(df$w)
-  cutoff <- prob * sum(df$w)
+  cutoff <- quant * sum(df$w)
   df$x[which(cumw >= cutoff)[1]]
 }
 
