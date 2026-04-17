@@ -95,9 +95,9 @@ download_WPP2024_pop <- function() {
   #  Download Population on 01 January 2024-2100, by single age (medium) and save as .csv file if not already saved
   if (!file.exists("Data/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.csv")) {
     print("Downloading Population on 01 January 2024-2100")
-    population_hist <- fread(url_population_hist)
+    population_proj <- fread(url_population_proj)
     print("Saving Population on 01 January 2024-2100")
-    fwrite(population_hist, "Data/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.csv", row.names = FALSE)
+    fwrite(population_proj, "Data/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.csv", row.names = FALSE)
   } else {warning("Population on 01 January 2024-2100 already saved as .csv")}
   
   
