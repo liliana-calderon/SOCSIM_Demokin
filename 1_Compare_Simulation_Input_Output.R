@@ -177,7 +177,7 @@ WPP_lifetable_male_hist <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Mal
 WPP_lifetable_female_proj <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Female_2024-2100.csv", show_col_types = FALSE)
 WPP_lifetable_male_proj <- read_csv("Data/WPP2024_Life_Table_Complete_Medium_Male_2024-2100.csv", show_col_types = FALSE) 
 
-# Combine WPP male and female life tables and filter for Sweden
+# Combine WPP historical and projected life tables for both sexes and filter for Sweden
 WPP_mort <- bind_rows(WPP_lifetable_female_hist, WPP_lifetable_male_hist,
                       WPP_lifetable_female_proj, WPP_lifetable_male_proj) %>% 
   filter(ISO3_code == "SWE") %>%
