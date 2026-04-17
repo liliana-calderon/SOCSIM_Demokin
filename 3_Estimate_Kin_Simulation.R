@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------------------------------
 # SOCSIM - SOCSIM vs Demokin - Estimate Mean and Distributions of Number and Ages of Kin by Age
-# U:/SOCSIM/SOCSIM_Demokin/3_Estimate_Mean_Distribution_Kin.R
+# U:/SOCSIM/SOCSIM_Demokin/3_Estimate_Kin_Simulation.R
 
 ## Estimate mean and distributions of numbers and ages of kin by age 
 # from a SOCSIM microsimulation for Sweden (1950-2100)
@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 10-04-2026
+# Last modified on 17-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))

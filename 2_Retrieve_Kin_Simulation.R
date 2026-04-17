@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------------------------------
-# SOCSIM - SOCSIM vs Demokin -  Retrieve kinship network of individuals alive over 1950-2100
-# U:/SOCSIM/SOCSIM_Demokin/2_Retrieve_Kin.R
+# SOCSIM - SOCSIM vs Demokin -  Retrieve kinship network of simulated individuals alive over 1950-2100
+# U:/SOCSIM/SOCSIM_Demokin/2_Retrieve_Kin_Simulation.R
 
 ##  Retrieve kinship network of individuals alive over 1950-2100 from a SOCSIM microsimulation 
 
@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 09-04-2026
+# Last modified on 17-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 

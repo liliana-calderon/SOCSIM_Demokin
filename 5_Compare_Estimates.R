@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------------------------------
 # SOCSIM - SOCSIM vs Demokin - Compare estimates from SOCSIM microsimulation and Demokin
-# U:/SOCSIM/SOCSIM_Demokin/4_Compare_Estimates.R
+# U:/SOCSIM/SOCSIM_Demokin/5_Compare_Estimates.R
 
 # Comparison of mean and distributions of numbers and ages of kin by age 
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
