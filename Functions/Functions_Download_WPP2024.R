@@ -104,27 +104,27 @@ download_WPP2024_pop <- function() {
   #  Check if Fertility data is already saved as .csv
   if (!file.exists("Data/WPP2024_Fertility_by_Age1.csv")) {
     print("Fertility Data has not been downloaded yet. Please use the download_WPP2024() function")
-  } else {print("Fertility data already saved as .csv")}
+  } else {}
   
   #  Check if Life tables female (historical) is already saved as .csv
   if (!file.exists("Data/WPP2024_Life_Table_Complete_Medium_Female_1950-2023.csv")) {
     print("Lifetable - Female (Historical) has not been downloaded yet. Please use the download_WPP2024() function")
-  } else {print("Lifetable - Female (Historical) already saved as .csv")}
+  } else {}
   
   #  Check if Life tables female (projections) is already saved as .csv
   if (!file.exists("Data/WPP2024_Life_Table_Complete_Medium_Female_2024-2100.csv")) {
     print("Lifetable - Female (Projections) has not been downloaded yet. Please use the download_WPP2024() function")
-  } else {print("Lifetable - Female (Projections) already saved as .csv")}
+  } else {}
   
   #  Check if Life tables male (historical) is already saved as .csv
   if (!file.exists("Data/WPP2024_Life_Table_Complete_Medium_Male_1950-2023.csv")) {
     print("Lifetable - Male (Historical)has not been downloaded yet. Please use the download_WPP2024() function" )
-  } else {print("Lifetable - Male (Historical) already saved as .csv")}
+  } else {}
   
   #  Check if Life tables male (projections) is already saved as .csv
   if (!file.exists("Data/WPP2024_Life_Table_Complete_Medium_Male_2024-2100.csv")) {
     print("Lifetable - Male (Projections) has not been downloaded yet. Please use the download_WPP2024() function")
-  } else {print("Lifetable - Male (Projections) already saved as .csv")}
+  } else {}
   
   
   # Return a message indicating the process is complete
