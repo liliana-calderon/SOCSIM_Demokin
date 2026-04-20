@@ -24,8 +24,7 @@ library(patchwork) # To combine ggplots
 ## Load function to retrieve selected kin and recode kin types
 source("Functions/Functions_Kin.R")
 
-## Load theme for the graphs and to convert SOCSIM time to calendar years
-# and estimate months corresponding to January and December 
+## Load theme for the graphs and to convert SOCSIM time
 source("Functions/Functions_Graphs.R")
 
 #------------------------------------------------------------------------------------------------------
@@ -48,6 +47,12 @@ load("Measures/distribution_number.RData")
 
 # Load distributions of ages for all years
 load("Measures/distribution_age.RData")
+
+# Load estimates from the time-invariant model
+load("Measures/demokin_invariant.RData")
+
+# Load estimates from the time-variant model
+load("Measures/demokin_variant.RData")
 
 #------------------------------------------------------------------------------------------------------
 ## Plot mean and distributions of numbers and ages of kin by age at 1st January 1950 ----
