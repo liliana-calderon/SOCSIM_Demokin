@@ -24,6 +24,9 @@ library(tidyverse)
 # Install Demokin from CRAN (if not already installed) and load the package
 # install.packages("Demokin")
 library(DemoKin)
+
+## Load theme for the graphs and to convert SOCSIM time
+source("Functions/Functions_Graphs.R")
 #----------------------------------------------------------------------------------------------------
 # Download population data from the WPP 2024 and save as .csv files ---
 
@@ -116,109 +119,93 @@ row.names(SWE_pop_male) <- 0:(nrow(SWE_pop_male) - 1)
 ## Androgynous approximation or shift the rates?
 ## Also, focal sex? and female birth ratio?
 
-SWE_1950_invariant <- kin2sex(pf = SWE_surv_female[,"1950"],
-                              pm = SWE_surv_male[,"1950"],
-                              ff = SWE_fert[,"1950"],
-                              fm = SWE_fert[,"1950"],
-                              time_invariant = TRUE,
-                              output_period = 1950,
-                              sex_focal = "f",
-                              birth_female = .5)
+demokin_invariant <- kin2sex(pf = SWE_surv_female[,"1950"],
+                             pm = SWE_surv_male[,"1950"],
+                             ff = SWE_fert[,"1950"],
+                             fm = SWE_fert[,"1950"],
+                             time_invariant = TRUE,
+                             output_period = 1950,
+                             sex_focal = "f",
+                             birth_female = .5)
+save(demokin_invariant, file = "Measures/demokin_invariant.RData")
 
 # Plot the results
-SWE_1950_invariant$kin_summary %>% 
-  # Combine older and younger aunts/uncles, cousins, siblings and niblings
-  mutate(kin = case_when(kin %in% c("ya", "oa") ~ "a",
-                         kin %in% c("cya", "coa") ~ "c",
-                         kin %in% c("ys", "os") ~ "s",
-                         kin %in% c("nys", "nos") ~ "n",
-                         TRUE ~ kin)) %>% 
+demokin_invariant$kin_summary %>% 
+  # Recode kin types 
+  recode_demokin() %>% 
   # Group by kin type, age and sex 
-  rename_kin(sex = "2sex") %>% 
-  summarise(count=sum(count_living), 
-            .by = c(kin_label, age_focal, sex_kin)) %>%
-  ggplot() +
-  geom_line(aes(age_focal, count))  +
-  # facet_wrap(~kin_label, scales = "free_y")
-  facet_grid(cols = vars(kin_label), 
-             rows = vars(sex_kin), scales = "free") +
-  theme_graphs() +
-  labs(x = "Age of focal", y= "Number of living kin")
-
-
+  summarise(mean_number = sum(count_living), 
+            .by = c(kin_type, age_focal, sex_kin)) %>%
+  rename(Age = age_focal) %>% 
+  ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
+  geom_line(linewidth = 1) +
+  labs(x = "Age of focal individual", y = "Mean number of living kin", color = "Kin type") +
+  scale_color_viridis_d(option = "D", direction =1)+
+  theme_graphs()
+ggsave("Graphs/Mean_Number_Kin_Invariant.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Mean_Number_Kin_Invariant.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 #----------------------------------------------------------------------------------------------------
 ## Run the two-sex time-varying kinship model ----
 
-SWE_1950_variant <- kin2sex(pf = SWE_surv_female,
-                            pm = SWE_surv_male,
-                            ff = SWE_fert,
-                            fm = SWE_fert,
-                            nf = SWE_pop_female,
-                            nm = SWE_pop_male,
-                            time_invariant = FALSE,
-                            output_period = 1950,
-                            sex_focal = "f",
-                            birth_female = .5)
+demokin_variant <- kin2sex(pf = SWE_surv_female,
+                           pm = SWE_surv_male,
+                           ff = SWE_fert,
+                           fm = SWE_fert,
+                           nf = SWE_pop_female,
+                           nm = SWE_pop_male,
+                           time_invariant = FALSE,
+                           output_period = c(2000, 2050, 2100),
+                           sex_focal = "f",
+                           birth_female = .5)
+save(demokin_variant, file = "Measures/demokin_variant.RData")
 
-SWE_1950_variant$kin_summary %>%
-  # Combine older and younger aunts/uncles, cousins, siblings and niblings
-  mutate(kin = case_when(kin %in% c("ya", "oa") ~ "a",
-                         kin %in% c("cya", "coa") ~ "c",
-                         kin %in% c("ys", "os") ~ "s",
-                         kin %in% c("nys", "nos") ~ "n",
-                         TRUE ~ kin)) %>% 
+demokin_variant$kin_summary %>%
+  # Recode kin types 
+  recode_demokin() %>%
   # Group by kin type, age and sex 
-  rename_kin(sex = "2sex") %>% 
-  summarise(count=sum(count_living), 
-            .by = c(kin_label, age_focal, sex_kin)) %>%
-  # Create plot
-  ggplot(aes(age_focal, count)) +
-  geom_line() + 
-  theme_bw() +
-  facet_grid(cols = vars(kin_label), 
-             rows = vars(sex_kin), scales = "free") +
-  labs(x = "Age of focal individual",
-       y = "Number of living relatives")
+  summarise(mean_number = sum(count_living), 
+            # Check if needed to distinguish by sex
+            .by = c(year, kin_type, age_focal, sex_kin)) %>%
+  rename(Age = age_focal) %>%
+  ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
+  facet_wrap(~ year, ncol = 1, scales = "free_y") +
+  geom_line(linewidth = 1) +
+  labs(x = "Age of focal individual", y = "Mean number of living kin", 
+       color = "Kin type", linetype = "Sex") +
+  scale_color_viridis_d(option = "D", direction =1)+
+  theme_graphs()
+ggsave("Graphs/Mean_Number_Kin_Variant.jpg", width = 20, height = 36,  dpi = 300)
+ggsave("Graphs/Mean_Number_Kin_Variant.pdf", width = 20, height = 36,  dpi = 300, device = "pdf")
 
 
-SWE_1950_variant$kin_summary %>%
-  # Combine older and younger aunts/uncles, cousins, siblings and niblings
-  mutate(kin = case_when(kin %in% c("ya", "oa") ~ "a",
-                         kin %in% c("cya", "coa") ~ "c",
-                         kin %in% c("ys", "os") ~ "s",
-                         kin %in% c("nys", "nos") ~ "n",
-                         TRUE ~ kin)) %>% 
+demokin_variant$kin_summary %>%
+  recode_demokin() %>% 
   # Group by kin type, age and sex 
-  rename_kin(sex = "2sex") %>% 
-  summarise(count=sum(count_living), 
-            .by = c(kin_label, age_focal, sex_kin)) %>%
-  ggplot(aes(age_focal, count, fill=sex_kin)) +
+  summarise(mean_number = sum(count_living), 
+            .by = c(year, kin_type, age_focal, sex_kin)) %>%
+  rename(Age = age_focal) %>%
+  ggplot(aes(x = Age, y = mean_number,  fill = sex_kin)) +
   geom_area() +
-  theme_bw() +
-  labs(y = "Expected number of living kin by sex and Focal's age",
+  facet_wrap(kin_type~ year,  ncol = 6, scales = "free_y") +
+  labs(y = "Mean number of living kin by sex and Focal's age",
        x = "Age of Focal",
        fill = "Sex of Kin") +
-  facet_wrap(~kin_label, scales = "free_y")
+  theme_graphs()
+ggsave("Graphs/Mean_Number_Kin_Variant2.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Mean_Number_Kin_Variant2.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
 ## Compare results for time-invariant and time-variant models
-SWE_1950_variant$kin_summary %>%
-  mutate(type = "variant") %>%
-  bind_rows(SWE_1950_invariant$kin_summary %>% mutate(type = "invariant")) %>% 
-  # Combine siblings and aunts/uncles for simplicity
-  mutate(kin = case_when(kin %in% c("ys", "os") ~ "s",
-                         kin %in% c("ya", "oa") ~ "a",
-                         TRUE ~ kin)) %>%
-  # Select key relationships
-  filter(kin %in% c("d", "m", "gm", "ggm", "s", "a")) %>%
-  # Group by relationship type, age, sex, and model type
-  rename_kin(sex = "2sex") %>% 
-  summarise(count=sum(count_living), 
-            .by = c(type, kin_label, age_focal, sex_kin)) %>%
+demokin_variant$kin_summary %>%
+  mutate(setting = "Variant") %>%
+  bind_rows(demokin_invariant$kin_summary %>% mutate(setting = "Invariant")) %>% 
+  recode_demokin() %>% 
+  summarise(mean_number=sum(count_living), 
+            .by = c(setting, kin_type, age_focal, sex_kin)) %>%
   # Create plot
-  ggplot(aes(age_focal, count, linetype = type)) +
+  ggplot(aes(age_focal, mean_number, linetype = type)) +
   geom_line() + 
-  theme_bw() +
-  facet_grid(cols = vars(kin_label), rows = vars(sex_kin), scales = "free") +
+  facet_grid(cols = vars(kin_type), rows = vars(sex_kin), scales = "free") +
+  theme_graphs()
   labs(title = "Time-variant vs. time-invariant kinship models by sex",
        x = "Age of focal individual",
        y = "Number of living relatives",
