@@ -239,3 +239,25 @@ recode_kin_generation <- function(opop_kin) {
                                            "Children", "Grandchildren", "Greatgrandchildren")))
   return(opop_kin)
 }
+
+## Recode kin type variable from demokin output
+
+recode_demokin <- function(kin_df) {
+  kin_df <- kin_df %>% 
+    mutate(kin_type = case_when(kin %in% c("ggm") ~ "Greatgrandparents",
+                                kin %in% c("gm") ~ "Grandparents",
+                                kin %in% c("m") ~ "Parents",
+                                kin %in% c("oa", "ya") ~ "Aunts_Uncles",
+                                kin %in% c("coa", "cya") ~ "Cousins",
+                                kin %in% c("os", "ys") ~ "Siblings",
+                                kin %in% c("nos", "nys") ~ "Niblings",
+                                kin %in% c("d") ~ "Children", 
+                                kin %in% c("gd") ~ "Grandchildren", 
+                                kin %in% c("ggd") ~ "Greatgrandchildren",
+                                  TRUE ~ NA), 
+           kin_type = factor(kin_type, 
+                             levels = c("Greatgrandparents", "Grandparents", "Parents",
+                                          "Aunts_Uncles", "Cousins", "Siblings", "Niblings",
+                                          "Children", "Grandchildren", "Greatgrandchildren")))
+  return(kin_df)
+}
