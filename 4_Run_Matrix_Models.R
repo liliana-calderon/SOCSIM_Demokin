@@ -6,7 +6,7 @@
 ## using data from the World Population Prospects 2024. 
 
 # Created on 17-04-2026
-# Last modified on 20-04-2026
+# Last modified on 21-04-2026
 #----------------------------------------------------------------------------------------------------
 ## Global Settings ----
 
@@ -21,8 +21,8 @@ library(data.table)
 library(readr)
 library(tidyverse)
 
-# Install Demokin from CRAN (if not already installed) and load the package
-# install.packages("Demokin")
+# Install the development version of DemoKin from GitHub
+# remotes::install_github("IvanWilli/DemoKin")
 library(DemoKin)
 
 ## Load theme for the graphs and to convert SOCSIM time
