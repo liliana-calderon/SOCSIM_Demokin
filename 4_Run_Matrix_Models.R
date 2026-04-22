@@ -6,7 +6,7 @@
 ## using data from the World Population Prospects 2024. 
 
 # Created on 17-04-2026
-# Last modified on 21-04-2026
+# Last modified on 22-04-2026
 #----------------------------------------------------------------------------------------------------
 ## Global Settings ----
 
@@ -27,6 +27,9 @@ library(DemoKin)
 
 ## Load theme for the graphs and to convert SOCSIM time
 source("Functions/Functions_Graphs.R")
+
+## Load function to retrieve selected kin and recode kin types
+source("Functions/Functions_Kin.R")
 #----------------------------------------------------------------------------------------------------
 # Download population data from the WPP 2024 and save as .csv files ---
 
@@ -114,10 +117,7 @@ row.names(SWE_pop_male) <- 0:(nrow(SWE_pop_male) - 1)
 
 #----------------------------------------------------------------------------------------------------
 ## Run the two-sex time-invariant kinship model ----
-
-## Check what to do with male fertility. 
-## Androgynous approximation or shift the rates?
-## Also, focal sex? and female birth ratio?
+## We use female fertility rates for both female and males (androgynous approximation)
 
 demokin_invariant <- kin2sex(pf = SWE_surv_female[,"1950"],
                              pm = SWE_surv_male[,"1950"],
@@ -142,11 +142,12 @@ demokin_invariant$kin_summary %>%
   labs(x = "Age of focal individual", y = "Mean number of living kin", color = "Kin type") +
   scale_color_viridis_d(option = "D", direction =1)+
   theme_graphs()
-ggsave("Graphs/Mean_Number_Kin_Invariant.jpg", width = 20, height = 16,  dpi = 300)
-ggsave("Graphs/Mean_Number_Kin_Invariant.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
+ggsave("Graphs/Demokin_Mean_Number_Kin_1950_Inv.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Demokin_Mean_Number_Kin_1950_Inv.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 #----------------------------------------------------------------------------------------------------
 ## Run the two-sex time-varying kinship model ----
 
+# Using 1950 as first year
 demokin_variant <- kin2sex(pf = SWE_surv_female,
                            pm = SWE_surv_male,
                            ff = SWE_fert,
@@ -154,30 +155,14 @@ demokin_variant <- kin2sex(pf = SWE_surv_female,
                            nf = SWE_pop_female,
                            nm = SWE_pop_male,
                            time_invariant = FALSE,
-                           output_period = c(2000, 2050, 2100),
+                           output_period = c(1950, 2000, 2050, 2100),
                            sex_focal = "f",
                            birth_female = .5)
 save(demokin_variant, file = "Measures/demokin_variant.RData")
+# Message after running the model: "Assuming stable population before 1950"
+# So, 1950 would correspond to the stable setting (invariant)
 
-demokin_variant$kin_summary %>%
-  # Recode kin types 
-  recode_demokin() %>%
-  # Group by kin type, age and sex 
-  summarise(mean_number = sum(count_living), 
-            # Check if needed to distinguish by sex
-            .by = c(year, kin_type, age_focal, sex_kin)) %>%
-  rename(Age = age_focal) %>%
-  ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
-  facet_wrap(~ year, ncol = 1, scales = "free_y") +
-  geom_line(linewidth = 1) +
-  labs(x = "Age of focal individual", y = "Mean number of living kin", 
-       color = "Kin type", linetype = "Sex") +
-  scale_color_viridis_d(option = "D", direction =1)+
-  theme_graphs()
-ggsave("Graphs/Mean_Number_Kin_Variant.jpg", width = 20, height = 36,  dpi = 300)
-ggsave("Graphs/Mean_Number_Kin_Variant.pdf", width = 20, height = 36,  dpi = 300, device = "pdf")
-
-
+# Plot mean number of living kin by sex and Focal's age
 demokin_variant$kin_summary %>%
   recode_demokin() %>% 
   # Group by kin type, age and sex 
@@ -186,27 +171,32 @@ demokin_variant$kin_summary %>%
   rename(Age = age_focal) %>%
   ggplot(aes(x = Age, y = mean_number,  fill = sex_kin)) +
   geom_area() +
-  facet_wrap(kin_type~ year,  ncol = 6, scales = "free_y") +
+  facet_wrap(kin_type~ year,  ncol = 4, scales = "free_y") +
   labs(y = "Mean number of living kin by sex and Focal's age",
        x = "Age of Focal",
        fill = "Sex of Kin") +
   theme_graphs()
-ggsave("Graphs/Mean_Number_Kin_Variant2.jpg", width = 20, height = 16,  dpi = 300)
-ggsave("Graphs/Mean_Number_Kin_Variant2.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
+ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.jpg", width = 20, height = 32,  dpi = 300)
+ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.pdf", width = 20, height = 32,  dpi = 300, device = "pdf")
 
-## Compare results for time-invariant and time-variant models
-demokin_variant$kin_summary %>%
-  mutate(setting = "Variant") %>%
-  bind_rows(demokin_invariant$kin_summary %>% mutate(setting = "Invariant")) %>% 
+## Compare results for time-invariant and time-variant models in 1950
+demokin_invariant$kin_summary %>% 
+              mutate(setting = "Invariant") %>% 
+  bind_rows(demokin_variant$kin_summary %>%
+            filter(year == 1950) %>%
+           mutate(setting = "Variant")) %>%
   recode_demokin() %>% 
   summarise(mean_number=sum(count_living), 
             .by = c(setting, kin_type, age_focal, sex_kin)) %>%
-  # Create plot
-  ggplot(aes(age_focal, mean_number, linetype = type)) +
+  ggplot(aes(age_focal, mean_number)) +
   geom_line() + 
   facet_grid(cols = vars(kin_type), rows = vars(sex_kin), scales = "free") +
-  theme_graphs()
-  labs(title = "Time-variant vs. time-invariant kinship models by sex",
+  theme_graphs()+
+  labs(title = "Time-invariant vs time-variant kinship models for 1950 by sex",
        x = "Age of focal individual",
-       y = "Number of living relatives",
+       y = "Number of living kin",
        linetype = "Model type")
+ggsave("Graphs/Demokin_Mean_Number_Invariant_Variant_1950.jpg", width = 20, height = 16,  dpi = 300)
+# There is no difference between the time-invariant and the time-variant in 1950
+# Because the time-variant model assumes a stable population before 1950, 
+# so the results for 1950 correspond to the stable setting (invariant)
