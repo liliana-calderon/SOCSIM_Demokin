@@ -179,6 +179,23 @@ demokin_variant$kin_summary %>%
 ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.jpg", width = 20, height = 32,  dpi = 300)
 ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.pdf", width = 20, height = 32,  dpi = 300, device = "pdf")
 
+# Plot mean number of living kin by sex and Focal's age (with lines)
+demokin_variant$kin_summary %>%
+  recode_demokin() %>%
+  summarise(mean_number = sum(count_living), 
+          .by = c(year, kin_type, age_focal, sex_kin)) %>%
+  rename(Age = age_focal) %>%
+  ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
+  facet_wrap(kin_type~ year, ncol = 4, scales = "free_y") +
+  geom_line(linewidth = 1) +
+  labs(x = "Age of focal individual", y = "Mean number of living kin", 
+       color = "Kin type", linetype = "Sex") +
+  scale_color_viridis_d(option = "D", direction =1)+
+  guides(color = 'none')+  
+  theme_graphs()
+ggsave("Graphs/Demokin_Mean_Number_Kin_Variant_Sex.jpg", width = 20, height = 32,  dpi = 300)
+ggsave("Graphs/Demokin_Mean_Number_Kin_Variant_Sex.pdf", width = 20, height = 32,  dpi = 300, device = "pdf")
+
 ## Compare results for time-invariant and time-variant models in 1950
 demokin_invariant$kin_summary %>% 
               mutate(setting = "Invariant") %>% 
