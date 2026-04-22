@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 17-04-2026
+# Last modified on 22-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -157,5 +157,5 @@ mean_kin_birth %>%
        colour = "Kin Type", linetype = "Kin Sex") +
   guides(colour = guide_legend(order = 1),
          linetype = guide_legend(order = 2))
-ggsave(file="Graphs/Mean_Number_Kin_Birth.jpeg", width=18, height=9, dpi=300)
-ggsave(file="Graphs/Mean_Number_Kin_Birth.pdf", width=18, height=9, dpi=300, device = "pdf")
+ggsave(file="Graphs/Socsim_Mean_Number_Kin_Birth_Time.jpeg", width=18, height=9, dpi=300)
+ggsave(file="Graphs/Socsim_Mean_Number_Kin_Birth_Time.pdf", width=18, height=9, dpi=300, device = "pdf")
