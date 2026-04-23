@@ -6,7 +6,7 @@
 ## using data from the World Population Prospects 2024. 
 
 # Created on 17-04-2026
-# Last modified on 22-04-2026
+# Last modified on 23-04-2026
 #----------------------------------------------------------------------------------------------------
 ## Global Settings ----
 
@@ -30,6 +30,9 @@ source("Functions/Functions_Graphs.R")
 
 ## Load function to retrieve selected kin and recode kin types
 source("Functions/Functions_Kin.R")
+
+## Load function to estimate the distribution of the numbers of kin from Demokin
+source("Functions/Functions_Kin_Distribution.R")
 #----------------------------------------------------------------------------------------------------
 # Download population data from the WPP 2024 and save as .csv files ---
 
@@ -130,11 +133,11 @@ demokin_invariant <- kin2sex(pf = SWE_surv_female[,"1950"],
 save(demokin_invariant, file = "Measures/demokin_invariant.RData")
 
 # Plot the results
-demokin_invariant$kin_summary %>% 
+demokin_invariant$kin_summary %>% # Check if we should use kin_full
   # Recode kin types 
   recode_demokin() %>% 
   # Group by kin type, age and sex 
-  summarise(mean_number = sum(count_living), 
+  summarise(mean_number = sum(count_living), # Change if we use kin_full
             .by = c(kin_type, age_focal, sex_kin)) %>%
   rename(Age = age_focal) %>% 
   ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
@@ -163,10 +166,10 @@ save(demokin_variant, file = "Measures/demokin_variant.RData")
 # So, 1950 would correspond to the stable setting (invariant)
 
 # Plot mean number of living kin by sex and Focal's age
-demokin_variant$kin_summary %>%
+demokin_variant$kin_summary %>% # Check if we should use kin_full
   recode_demokin() %>% 
   # Group by kin type, age and sex 
-  summarise(mean_number = sum(count_living), 
+  summarise(mean_number = sum(count_living), # Change if we use kin_full
             .by = c(year, kin_type, age_focal, sex_kin)) %>%
   rename(Age = age_focal) %>%
   ggplot(aes(x = Age, y = mean_number,  fill = sex_kin)) +
@@ -180,9 +183,9 @@ ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.jpg", width = 20, height = 32,  d
 ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.pdf", width = 20, height = 32,  dpi = 300, device = "pdf")
 
 # Plot mean number of living kin by sex and Focal's age (with lines)
-demokin_variant$kin_summary %>%
+demokin_variant$kin_summary %>% # Check if we should use kin_full
   recode_demokin() %>%
-  summarise(mean_number = sum(count_living), 
+  summarise(mean_number = sum(count_living),  # Change if we use kin_full
           .by = c(year, kin_type, age_focal, sex_kin)) %>%
   rename(Age = age_focal) %>%
   ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
@@ -217,3 +220,28 @@ ggsave("Graphs/Demokin_Mean_Number_Invariant_Variant_1950.jpg", width = 20, heig
 # There is no difference between the time-invariant and the time-variant in 1950
 # Because the time-variant model assumes a stable population before 1950, 
 # so the results for 1950 correspond to the stable setting (invariant)
+
+# Calculate the distribution of numbers of kin by year, age of focal and kin type
+demokin_dist_number <- demokin_mean_number %>%
+  rowwise() %>%
+  mutate(dist_tbl = list(kin_distribution(kin_type, mean_number)[, c("n", "pmf")])) %>% 
+  ungroup() %>%
+  unnest(dist_tbl)
+
+# Plot the distribution of numbers of kin by year, age of focal and kin type
+demokin_dist_number %>%
+  rename(n_kin_alive = n, dist_number = pmf) %>% 
+  filter(year == 1950) %>%
+  group_split(kin_type) %>%
+  map(function(df) {
+    kin <- unique(df$kin_type)
+    ggplot(df, aes(x = age_focal, y = dist_number, fill = as.factor(n_kin_alive))) +
+      geom_col(position = "stack", width = 1) +
+      labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
+      scale_fill_viridis_d(option = "F", direction = -1) +
+      theme_graphs() +
+      theme(legend.position = 'none')
+  }) %>%
+  cowplot::plot_grid(plotlist = ., ncol = 4)
+ggsave("Graphs/Demokin_Distribution_Number_Kin_1950.jpg", width = 20, height = 16, dpi = 300)
+ggsave("Graphs/Demokin_Distribution_Number_Kin_1950.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
