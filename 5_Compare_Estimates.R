@@ -92,11 +92,12 @@ ggsave("Graphs/Comparison_Mean_Number_Age.pdf", width = 20, height = 30, dpi = 3
 years_plot <- c(1950, 2000, 2050, 2100)
 
 # Get mean age of kin at each age of Focal at each selected year from Demokin
-demokin_mean_age <- demokin_variant$kin_summary %>% 
+demokin_mean_age <- demokin_variant$kin_summary %>% # Check if we should use kin_full
   recode_demokin() %>%
   filter(year %in% years_plot) %>%
   # Weighting by 'count_living' to ensure an age-weighted mean of kin between the sexes.
   summarise(mean_age_kin = weighted.mean(mean_age, count_living, na.rm = TRUE),
+            # # Change if we use kin_full
             .by = c(year, kin_type, age_focal)) %>%
   mutate(Model = "Demokin")
 
@@ -121,10 +122,8 @@ bind_rows(demokin_mean_age, socsim_mean_age) %>%
 ggsave("Graphs/Comparison_Mean_Age_Kin.jpg", width = 20, height = 30, dpi = 300)
 ggsave("Graphs/Comparison_Mean_Age_Kin.pdf", width = 20, height = 30, dpi = 300, device = "pdf")
 
-
 # Mean age of of kin by sex at each age of Focal at selected years for Demokin
-demokin_mean_age_sex <- bind_rows(demokin_variant_1950$kin_summary,
-                                  demokin_variant$kin_summary) %>%
+demokin_mean_age_sex <- demokin_variant$kin_summary %>%
   recode_demokin() %>%
   filter(year %in% years_plot) %>%
   summarise(mean_age_kin = mean(mean_age, na.rm = TRUE),
