@@ -109,6 +109,33 @@ distribution_age <- results %>% map("dist_age") %>% bind_rows()
 save(distribution_age, file = "Measures/distribution_age.RData")
 
 #----------------------------------------------------------------------------------------------------
+## Estimate mean and distributions of numbers and ages of kin by sex and age at every 1st January 1950-2101 ----
+
+#### Map the function to all calendar years, combine and save the results ----
+start_time <- Sys.time()
+# Map the function to all calendar years
+results_sex <- map(1949:2100, ~ estimates_sex_age_year(year_start = .x, 
+                                                   year_end = .x, 
+                                                   ego_ages_year = ego_ages_year, 
+                                                   kin = kin), 
+               .progress = TRUE)
+end_time <- Sys.time()
+cat("Processing time:", end_time - start_time)
+# Processing time: 1.678384 hours
+
+# Combine and save means for all years
+mean_number_age_sex <- results_sex %>% map("mean_number_age_sex") %>% bind_rows() 
+save(mean_number_age_sex, file = "Measures/mean_number_age_sex.RData")
+
+# Combine and save distributions of numbers for all years
+distribution_number_sex <- results_sex %>% map("dist_number_sex") %>% bind_rows()
+save(distribution_number_sex, file = "Measures/distribution_number_sex.RData")
+
+# Combine and save distributions of ages for all years
+distribution_age_sex <- results_sex %>% map("dist_age_sex") %>% bind_rows()
+save(distribution_age_sex, file = "Measures/distribution_age_sexRData")
+
+#----------------------------------------------------------------------------------------------------
 ## Quick checks of the results ----
 
 # mean_number_age should have full grid
@@ -137,13 +164,13 @@ mean_number_age %>%
 
 # dist_number should sum to 1 per (year_next, age_jan_next, kin_type)
 distribution_number %>% 
-  group_by(year_next, age_jan_next, kin_type) %>%
+  group_by(year_next, age_jan_next, kin_type, fem_kin) %>%
   summarise(s = sum(dist_number), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
 
 # dist_age should sum to 1 per (year_next, age_jan_next, kin_type)
 distribution_age %>% 
-  group_by(year_next, age_jan_next, kin_type) %>%
+  group_by(year_next, age_jan_next, kin_type, fem_kin) %>%
   summarise(s = sum(dist_age), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
 
