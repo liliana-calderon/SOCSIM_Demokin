@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 17-04-2026
+# Last modified on 24-04-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -109,33 +109,6 @@ distribution_age <- results %>% map("dist_age") %>% bind_rows()
 save(distribution_age, file = "Measures/distribution_age.RData")
 
 #----------------------------------------------------------------------------------------------------
-## Estimate mean and distributions of numbers and ages of kin by sex and age at every 1st January 1950-2101 ----
-
-#### Map the function to all calendar years, combine and save the results ----
-start_time <- Sys.time()
-# Map the function to all calendar years
-results_sex <- map(1949:2100, ~ estimates_sex_age_year(year_start = .x, 
-                                                   year_end = .x, 
-                                                   ego_ages_year = ego_ages_year, 
-                                                   kin = kin), 
-               .progress = TRUE)
-end_time <- Sys.time()
-cat("Processing time:", end_time - start_time)
-# Processing time: 1.678384 hours
-
-# Combine and save means for all years
-mean_number_age_sex <- results_sex %>% map("mean_number_age_sex") %>% bind_rows() 
-save(mean_number_age_sex, file = "Measures/mean_number_age_sex.RData")
-
-# Combine and save distributions of numbers for all years
-distribution_number_sex <- results_sex %>% map("dist_number_sex") %>% bind_rows()
-save(distribution_number_sex, file = "Measures/distribution_number_sex.RData")
-
-# Combine and save distributions of ages for all years
-distribution_age_sex <- results_sex %>% map("dist_age_sex") %>% bind_rows()
-save(distribution_age_sex, file = "Measures/distribution_age_sexRData")
-
-#----------------------------------------------------------------------------------------------------
 ## Quick checks of the results ----
 
 # mean_number_age should have full grid
@@ -210,7 +183,7 @@ ggsave("Graphs/Socsim_Mean_Age_Kin_1950.pdf", width = 20, height = 16,  dpi = 30
 
 ## Distribution of the number of kin at each age of Focal
 
-plots_dist_number_stable <- 
+plots_dist_number_1950 <- 
   distribution_number %>%
   filter(year_next == 1950) %>% 
   rename(Age = age_jan_next) %>%
@@ -227,7 +200,7 @@ plots_dist_number_stable <-
       theme(legend.position = 'none')
   })
 
-cowplot::plot_grid(plotlist = plots_dist_number_stable, ncol = 4)
+cowplot::plot_grid(plotlist = plots_dist_number_1950, ncol = 4)
 ggsave("Graphs/Socsim_Distribution_Number_Kin_1950.jpg", width = 20, height = 16,  dpi = 300)
 ggsave("Graphs/Socsim_Distribution_Number_Kin_1950.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
