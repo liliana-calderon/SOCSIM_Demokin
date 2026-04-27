@@ -182,9 +182,7 @@ ggsave("Graphs/Socsim_Mean_Age_Kin_1950.pdf", width = 20, height = 16,  dpi = 30
 
 
 ## Distribution of the number of kin at each age of Focal
-
-plots_dist_number_1950 <- 
-  distribution_number %>%
+distribution_number %>%
   filter(year_next == 1950) %>% 
   rename(Age = age_jan_next) %>%
   recode_kin() %>%
@@ -192,15 +190,13 @@ plots_dist_number_1950 <-
   map(function(df) {
     kin <- unique(df$kin_type)
     ggplot(df, aes(x = Age, y = dist_number, fill = as.factor(n_kin_alive))) +
-      # Using geom_col instead of geom_area to avoid getting fake values > 1 when stacking
       geom_col(position = "stack", width = 1) + 
       labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
       scale_fill_viridis_d(option = "F", direction = -1) +
       theme_graphs() +
       theme(legend.position = 'none')
-  })
-
-cowplot::plot_grid(plotlist = plots_dist_number_1950, ncol = 4)
+  }) %>% 
+  cowplot::plot_grid(plotlist = ., ncol = 4)
 ggsave("Graphs/Socsim_Distribution_Number_Kin_1950.jpg", width = 20, height = 16,  dpi = 300)
 ggsave("Graphs/Socsim_Distribution_Number_Kin_1950.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 
