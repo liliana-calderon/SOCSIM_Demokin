@@ -267,8 +267,8 @@ bind_rows(WPP_fert5 %>% rename(Estimate = ASFR),
   scale_x_discrete(guide = guide_axis(angle = 90)) +
   labs(x = "Age") + 
   theme_graphs()
-ggsave(file="Graphs/ASFR_ASMR_Input_Output.jpeg", width=17, height=9, dpi=300)
-ggsave(file="Graphs/ASFR_ASMR_Input_Output.pdf", width=17, height=9, dpi=300, device = "pdf")
+ggsave(file="Graphs/App_ASFR_ASMR_Input_Output.jpeg", width=17, height=9, dpi=300)
+ggsave(file="Graphs/App_ASFR_ASMR_Input_Output.pdf", width=17, height=9, dpi=300, device = "pdf")
 #----------------------------------------------------------------------------------------------------
 # Summary measures: TFR and e0 ----
 # Here, we use the socsim rates by 1 year age group and 1 calendar year
@@ -397,4 +397,5 @@ bind_rows(WPP_TFR %>% rename(Estimate = TFR) %>%  mutate(Rate = "TFR"),
                                "Life Expectancy at Birth" =  scale_y_continuous()))+
   scale_x_continuous(breaks = c(1950, 2000, 2050, 2100))+
   theme_graphs()
-ggsave(file="Graphs/TFR_e0_Input_Output.pdf", width=17, height=9, dpi=300, device = "pdf")
+ggsave(file="Graphs/App_TFR_e0_Input_Output.jpeg", width=17, height=9, dpi=300)
+ggsave(file="Graphs/App_TFR_e0_Input_Output.pdf", width=17, height=9, dpi=300, device = "pdf")
