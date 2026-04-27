@@ -249,6 +249,46 @@ ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 20, height = 28,  dpi =
 ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 28, height = 28,  dpi = 300, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
+## Proportion of individuals with null or large kin sets
+
+# Helper function to calculate the cut point for large kin sets based on the 75 quantile of the distribution
+wtd_quant <- function(x, w, quant = 0.75) {
+  df <- tibble(x = x, w = w) %>%
+    filter(!is.na(x) & !is.na(w) & w > 0) %>%
+    arrange(x)
+  if (nrow(df) == 0) return(NA_real_)
+  cumw <- cumsum(df$w)
+  cutoff <- quant * sum(df$w)
+  df$x[which(cumw >= cutoff)[1]]
+}
+
+# Calculate the proportion of individuals with no kin and with large kin sets 
+prop_null_large <- bind_rows(demokin_dist_number, socsim_dist_number) %>% 
+  group_by(year, age_focal, kin_type, Model) %>%
+  # Find the 75th percentile of the distribution of kin numbers
+  summarise(large_cut = wtd_quant(n_kin_alive, dist_number, 0.75),
+            prop_zero  = sum(dist_number[n_kin_alive == 0], na.rm = TRUE),
+            prop_large = sum(dist_number[n_kin_alive >= large_cut], na.rm = TRUE),
+            .groups = "drop") %>%
+  pivot_longer(c(prop_zero, prop_large),
+               names_to = "kin_size", values_to = "proportion") %>% 
+  mutate(kin_size = recode(kin_size, prop_zero = "Null kin", 
+                           prop_large = "Large kin (≥ 75th pct)"), 
+         year = factor(year, levels = years_plot)) 
+
+prop_null_large %>%
+  ggplot(aes(x = age_focal, y = proportion, color = Model, linetype = kin_size)) +
+  geom_line(linewidth = 1) +
+  facet_grid(kin_type ~ year, scales = "fixed") +
+  labs(x = "Age of focal individual", y = "Proportion",
+       color = "Model", linetype = "Kin size") +
+  scale_color_manual(values = c("Analytical" = "#B22222", "Microsimulation" = "#007A75")) +
+  scale_linetype_manual(values = c("Null kin" = "dashed",
+                                   "Large kin (≥ 75th pct)" = "solid")) +
+  theme_graphs()
+ggsave("Graphs/App_Proportion_Null_Large.jpg", width = 20, height = 28, dpi = 300)
+ggsave("Graphs/App_Proportion_Null_Large.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+#------------------------------------------------------------------------------------------------------
 ## Plot distribution of ages of kin at selected years and ages of Focal ----
 
 ages_plot <- c(0, 20, 40, 60, 80)
