@@ -230,11 +230,23 @@ dist_number_capped %>%
   facet_grid(kin_type ~ year + Model) +
   scale_fill_viridis_d(option = "F", direction = -1, name = "Number of kin") +
   labs(x = "Age of focal individual", y = "Proportion") +
-  theme_graphs()  +
-  guides(fill = guide_legend(override.aes = list(color = 0), nrow = 2, byrow = TRUE))
+  theme_graphs() + theme(strip.text = element_text(size=18)) +
+  guides(fill = guide_legend(override.aes = list(color = 0), nrow = 1, byrow = TRUE))
+ggsave("Graphs/3_Distribution_Number_Kin.jpg", width = 20, height = 14,  dpi = 300)
+ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 14,  dpi = 300, device = "pdf")
 
-ggsave("Graphs/3_Distribution_Number_Kin.jpg", width = 20, height = 16,  dpi = 300)
-ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
+
+# Plot the distribution of numbers of all kin from both models with capped number of kin
+dist_number_capped %>%
+  ggplot(aes(x = age_focal, y = dist_number, fill = n_plot)) +
+  geom_col(width = 1) +
+  facet_grid(kin_type ~ year + Model) +
+  scale_fill_viridis_d(option = "F", direction = -1, name = "Number of kin") +
+  labs(x = "Age of focal individual", y = "Proportion") +
+  theme_graphs() + theme(strip.text = element_text(size=18)) +
+  guides(fill = guide_legend(override.aes = list(color = 0), nrow = 1, byrow = TRUE))
+ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 20, height = 28,  dpi = 300)
+ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 28, height = 28,  dpi = 300, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
 ## Plot distribution of ages of kin at selected years and ages of Focal ----
