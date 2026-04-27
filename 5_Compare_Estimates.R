@@ -26,6 +26,9 @@ source("Functions/Functions_Kin.R")
 ## Load theme for the graphs and to convert SOCSIM time
 source("Functions/Functions_Graphs.R")
 
+## Load function to estimate the distribution of the numbers of kin from Demokin
+source("Functions/Functions_Kin_Distribution.R")
+
 #------------------------------------------------------------------------------------------------------
 ## Load opop, means and distributions of kin by age and year and define constants -----
 # Results for 01.01.1950 correspond to the stable setting
@@ -175,6 +178,65 @@ bind_rows(demokin_mean_age_sex, socsim_mean_age) %>%
   theme_graphs()
 ggsave("Graphs/App_Mean_Age_Kin_Sex.jpg", width = 20, height = 28, dpi = 300)
 ggsave("Graphs/App_Mean_Age_Kin_Sex.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+
+#----------------------------------------------------------------------------------------------------
+## Calculate the distribution of numbers of kin by year, kin type and age of focal ----
+
+# Select years to plot
+years_plot <- c(1950, 2000, 2050, 2100)
+
+# Select kin types to plot
+kin_types_plot <- c("Grandparents", "Siblings", "Grandchildren")
+
+# Wrangle Socsim data for plotting
+socsim_dist_number <- distribution_number %>% 
+  rename(age_focal = age_jan_next) %>%
+  recode_kin() %>% 
+  mutate(Model = "Microsimulation")
+
+# Apply the kin_distribution() function to the Demokin output to get the distribution
+demokin_dist_number <- demokin_mean_number %>%
+  rowwise() %>%
+  mutate(dist_tbl = list(kin_distribution(kin_type, mean_number)[, c("n", "pmf")])) %>% 
+  ungroup() %>%
+  unnest(dist_tbl) %>% 
+  rename(n_kin_alive = n, dist_number = pmf) %>% 
+  mutate(Model = "Analytical")
+
+# Plot the distribution of kin numbers from Demokin
+demokin_dist_number %>%
+  filter(year == 1950) %>%
+  group_split(kin_type) %>%
+  map(function(df) {
+    kin <- unique(df$kin_type)
+    ggplot(df, aes(x = age_focal, y = dist_number, fill = as.factor(n_kin_alive))) +
+      geom_col(position = "stack", width = 1) +
+      labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
+      scale_fill_viridis_d(option = "F", direction = -1) +
+      theme_graphs() +
+      theme(legend.position = 'none')
+  }) %>%
+  cowplot::plot_grid(plotlist = ., ncol = 4)
+
+# Plot the distribution of kin numbers from Socsim
+socsim_dist_number %>%
+  filter(year_next == 1950) %>% 
+  group_split(kin_type) %>%
+  # mutate(Model = "Microsimulation") %>%
+  map(function(df) {
+    kin <- unique(df$kin_type)
+    ggplot(df, aes(x = age_focal, y = dist_number, fill = as.factor(n_kin_alive))) +
+      geom_col(position = "stack", width = 1) + 
+      labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
+      scale_fill_viridis_d(option = "F", direction = -1) +
+      theme_graphs() +
+      theme(legend.position = 'none')
+  }) %>% 
+  cowplot::plot_grid(plotlist = ., ncol = 4)
+
+ggsave("Graphs/3_Distribution_Number_Kin.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
+
 #------------------------------------------------------------------------------------------------------
 ## Plot distribution of ages of kin at selected years and ages of Focal ----
 
