@@ -214,6 +214,7 @@ wtd_quant <- function(x, w, quant = 0.75) {
   df$x[which(cumw >= cutoff)[1]]
 }
 
+# Calculate and plot the proportion of individuals with no kin and with large kin sets 
 distribution_number %>%
   filter(year_next == 1950) %>% 
   recode_kin() %>% 
@@ -224,19 +225,15 @@ distribution_number %>%
             prop_large = sum(dist_number[n_kin_alive >= large_cut], na.rm = TRUE),
             .groups = "drop") %>%
   pivot_longer(c(prop_zero, prop_large),
-               names_to = "kin_size",
-               values_to = "proportion") %>% 
+               names_to = "kin_size", values_to = "proportion") %>% 
   ggplot(aes(x = age_jan_next, y = proportion, color = kin_type, linetype = kin_size)) +
   geom_line(linewidth = 1) +
   facet_wrap(~ kin_type, ncol = 2) +
-  labs(x = "Age of focal individual", 
-       y = "Proportion", 
-       color = "Kin type",
-       linetype = "Kin size") +
+  labs(x = "Age of focal individual", y = "Proportion", 
+       color = "Kin type", linetype = "Kin size") +
   scale_color_viridis_d(option = "F", direction = 1) +
-  scale_linetype_manual(
-    values = c("dashed", "solid"), 
-    labels = c("Null kin", "Large Kin (≥ 75th per)") ) +
+  scale_linetype_manual(values = c("dashed", "solid"), 
+                        labels = c("Null kin", "Large Kin (≥ 75th per)") ) +
   theme_graphs()
 ggsave("Graphs/Socsim_Proportion_Null_Large_1950.jpg", width = 20, height = 16, dpi = 300)
 ggsave("Graphs/Socsim_Proportion_Null_Large_1950.pdf", width = 20, height = 16, dpi = 300, device = "pdf")
