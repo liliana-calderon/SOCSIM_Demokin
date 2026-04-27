@@ -190,8 +190,9 @@ kin_types_plot <- c("Grandparents", "Siblings", "Grandchildren")
 
 # Wrangle Socsim data for plotting
 socsim_dist_number <- distribution_number %>% 
-  rename(age_focal = age_jan_next) %>%
+  rename(age_focal = age_jan_next, year = year_next) %>%
   recode_kin() %>% 
+  filter(year %in% years_plot) %>%
   mutate(Model = "Microsimulation")
 
 # Apply the kin_distribution() function to the Demokin output to get the distribution
@@ -201,38 +202,36 @@ demokin_dist_number <- demokin_mean_number %>%
   ungroup() %>%
   unnest(dist_tbl) %>% 
   rename(n_kin_alive = n, dist_number = pmf) %>% 
+  filter(year %in% years_plot) %>%
   mutate(Model = "Analytical")
 
-# Plot the distribution of kin numbers from Demokin
-demokin_dist_number %>%
-  filter(year == 1950) %>%
-  group_split(kin_type) %>%
-  map(function(df) {
-    kin <- unique(df$kin_type)
-    ggplot(df, aes(x = age_focal, y = dist_number, fill = as.factor(n_kin_alive))) +
-      geom_col(position = "stack", width = 1) +
-      labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
-      scale_fill_viridis_d(option = "F", direction = -1) +
-      theme_graphs() +
-      theme(legend.position = 'none')
-  }) %>%
-  cowplot::plot_grid(plotlist = ., ncol = 4)
+# Define maximum number of kin to plot (e.g., 10)
+n_max <- 11
 
-# Plot the distribution of kin numbers from Socsim
-socsim_dist_number %>%
-  filter(year_next == 1950) %>% 
-  group_split(kin_type) %>%
-  # mutate(Model = "Microsimulation") %>%
-  map(function(df) {
-    kin <- unique(df$kin_type)
-    ggplot(df, aes(x = age_focal, y = dist_number, fill = as.factor(n_kin_alive))) +
-      geom_col(position = "stack", width = 1) + 
-      labs(x = "Age of focal individual", y = "Proportion", fill = "Number of kin", title = kin) +
-      scale_fill_viridis_d(option = "F", direction = -1) +
-      theme_graphs() +
-      theme(legend.position = 'none')
-  }) %>% 
-  cowplot::plot_grid(plotlist = ., ncol = 4)
+# Combine and cap the distribution of numbers of kin from both models for plotting
+dist_number_capped <- bind_rows(demokin_dist_number, socsim_dist_number) %>%
+  mutate(year = factor(year, levels = years_plot),
+         kin_type = factor(kin_type),
+         Model = factor(Model, levels = c("Analytical", "Microsimulation")),
+         n_kin_alive = as.integer(n_kin_alive),
+         # Define maximum number of kin to plot (e.g., 11)
+         n_plot = if_else(n_kin_alive >= n_max, n_max, n_kin_alive)) %>%
+  group_by(year, kin_type, age_focal, Model, n_plot) %>%
+  summarise(dist_number = sum(dist_number), .groups = "drop") %>%
+  mutate(n_plot = factor(n_plot, levels = 0:n_max,
+                         labels = c(as.character(0:(n_max-1)), 
+                                    paste0(n_max, "+")))) 
+
+# Plot the distribution of numbers of selected kin from both models with capped number of kin
+dist_number_capped %>%
+  filter(kin_type %in% kin_types_plot) %>%
+  ggplot(aes(x = age_focal, y = dist_number, fill = n_plot)) +
+  geom_col(width = 1) +
+  facet_grid(kin_type ~ year + Model) +
+  scale_fill_viridis_d(option = "F", direction = -1, name = "Number of kin") +
+  labs(x = "Age of focal individual", y = "Proportion") +
+  theme_graphs()  +
+  guides(fill = guide_legend(override.aes = list(color = 0), nrow = 2, byrow = TRUE))
 
 ggsave("Graphs/3_Distribution_Number_Kin.jpg", width = 20, height = 16,  dpi = 300)
 ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
