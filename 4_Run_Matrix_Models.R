@@ -6,7 +6,7 @@
 ## using data from the World Population Prospects 2024. 
 
 # Created on 17-04-2026
-# Last modified on 23-04-2026
+# Last modified on 29-04-2026
 #----------------------------------------------------------------------------------------------------
 ## Global Settings ----
 
@@ -53,9 +53,9 @@ WPP_fert <- read_csv("Data/WPP2024_Fertility_by_Age1.csv", show_col_types = FALS
 # Specify the full age range (of survival matrices) for completion
 age_range <- 0:100
 
-# Filter WPP fertility data for Sweden 
+# Filter WPP female fertility data for Sweden 
 # and reshape as matrix with rows representing ages and columns representing years
-SWE_fert <- WPP_fert %>% 
+SWE_fert_female <- WPP_fert %>% 
   filter(ISO3_code == "SWE" & Variant == "Medium") %>% 
   mutate(ASFR = ASFR/1000) %>%
   select(age = AgeGrpStart, year = Time, fx = ASFR) %>% 
@@ -64,7 +64,29 @@ SWE_fert <- WPP_fert %>%
   pivot_wider(names_from = year, values_from = fx) %>%
   select(-age) %>%
   as.matrix()
-row.names(SWE_fert) <- 0:(nrow(SWE_fert) - 1)
+row.names(SWE_fert_female) <- 0:(nrow(SWE_fert_female) - 1)
+
+# Shift male fertility schedule by 2 years
+SWE_fert_male <- WPP_fert %>% 
+  filter(ISO3_code == "SWE" & Variant == "Medium") %>% 
+  mutate(ASFR = ASFR/1000) %>%
+  select(age = AgeGrpStart, year = Time, fx = ASFR) %>% 
+  # Create all age-year combinations for ages 0–100 and fill missing fx with 0
+  tidyr::complete(age = age_range, year, fill = list(fx = 0)) %>% 
+  mutate(age_male = age + 2) %>%
+  filter(age_male <= max(age)) %>%
+  # Create all age-year combinations for ages 0–100 and fill missing fx with 0
+  tidyr::complete(age_male = min(age):max(age), nesting(year), fill = list(fx = 0)) %>%
+  select(-age) %>% 
+  pivot_wider(names_from = year, values_from = fx) %>%
+  select(-age_male) %>% 
+  as.matrix()
+row.names(SWE_fert_male) <- 0:(nrow(SWE_fert_male) - 1)
+
+# Quick plot to check the fertility schedules for all years (shifted by 2 years)
+age <- 0:(nrow(SWE_fert_female) - 1)
+matplot(age, SWE_fert_female, type="l", lty=1, col=rainbow(ncol(SWE_fert_female)), main="Female")
+matplot(age, SWE_fert_male, type="l", lty=1, col=rainbow(ncol(SWE_fert_male)), main="Male")
 
 
 ## Read the WPP 2024 historical and projected life tables in csv format
@@ -124,12 +146,12 @@ row.names(SWE_pop_male) <- 0:(nrow(SWE_pop_male) - 1)
 
 demokin_invariant <- kin2sex(pf = SWE_surv_female[,"1950"],
                              pm = SWE_surv_male[,"1950"],
-                             ff = SWE_fert[,"1950"],
-                             fm = SWE_fert[,"1950"],
+                             ff = SWE_fert_female[,"1950"],
+                             fm = SWE_fert_male[,"1950"],
                              time_invariant = TRUE,
                              output_period = 1950,
                              sex_focal = "f",
-                             birth_female = .5)
+                             birth_female = 0.488) 
 save(demokin_invariant, file = "Measures/demokin_invariant.RData")
 
 # Plot the results
@@ -153,23 +175,23 @@ ggsave("Graphs/Demokin_Mean_Number_Kin_1950_Inv.pdf", width = 20, height = 16,  
 # Using 1950 as first year
 demokin_variant <- kin2sex(pf = SWE_surv_female,
                            pm = SWE_surv_male,
-                           ff = SWE_fert,
-                           fm = SWE_fert,
+                           ff = SWE_fert_female,
+                           fm = SWE_fert_male,
                            nf = SWE_pop_female,
                            nm = SWE_pop_male,
                            time_invariant = FALSE,
                            output_period = c(1950, 2000, 2050, 2100),
                            sex_focal = "f",
-                           birth_female = .5)
+                           birth_female = 0.488)
 save(demokin_variant, file = "Measures/demokin_variant.RData")
 # Message after running the model: "Assuming stable population before 1950"
 # So, 1950 would correspond to the stable setting (invariant)
 
 # Plot mean number of living kin by sex and Focal's age
-demokin_variant$kin_summary %>% # Check if we should use kin_full
-  recode_demokin() %>% 
+demokin_variant$kin_full %>%
+  recode_demokin() %>%
   # Group by kin type, age and sex 
-  summarise(mean_number = sum(count_living), # Change if we use kin_full
+  summarise(mean_number = sum(living), 
             .by = c(year, kin_type, age_focal, sex_kin)) %>%
   rename(Age = age_focal) %>%
   ggplot(aes(x = Age, y = mean_number,  fill = sex_kin)) +
@@ -183,10 +205,11 @@ ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.jpg", width = 20, height = 32,  d
 ggsave("Graphs/Demokin_Mean_Number_Kin_Variant.pdf", width = 20, height = 32,  dpi = 300, device = "pdf")
 
 # Plot mean number of living kin by sex and Focal's age (with lines)
-demokin_variant$kin_summary %>% # Check if we should use kin_full
+demokin_variant$kin_full %>%
   recode_demokin() %>%
-  summarise(mean_number = sum(count_living),  # Change if we use kin_full
-          .by = c(year, kin_type, age_focal, sex_kin)) %>%
+  # Group by kin type, age and sex 
+  summarise(mean_number = sum(living), 
+            .by = c(year, kin_type, age_focal, sex_kin)) %>%
   rename(Age = age_focal) %>%
   ggplot(aes(x = Age, y = mean_number, color = kin_type, linetype = sex_kin)) +
   facet_wrap(kin_type~ year, ncol = 4, scales = "free_y") +
@@ -208,21 +231,25 @@ demokin_invariant$kin_summary %>%
   recode_demokin() %>% 
   summarise(mean_number=sum(count_living), 
             .by = c(setting, kin_type, age_focal, sex_kin)) %>%
-  ggplot(aes(age_focal, mean_number)) +
+  ggplot(aes(x = age_focal, y = mean_number, color = setting)) +
   geom_line() + 
   facet_grid(cols = vars(kin_type), rows = vars(sex_kin), scales = "free") +
   theme_graphs()+
   labs(title = "Time-invariant vs time-variant kinship models for 1950 by sex",
        x = "Age of focal individual",
        y = "Number of living kin",
-       linetype = "Model type")
+       color = "Setting")
 ggsave("Graphs/Demokin_Mean_Number_Invariant_Variant_1950.jpg", width = 20, height = 16,  dpi = 300)
+ggsave("Graphs/Demokin_Mean_Number_Invariant_Variant_1950.pdf", width = 20, height = 16,  dpi = 300, device = "pdf")
 # There is no difference between the time-invariant and the time-variant in 1950
 # Because the time-variant model assumes a stable population before 1950, 
 # so the results for 1950 correspond to the stable setting (invariant)
 
 # Calculate the distribution of numbers of kin by year, age of focal and kin type
-demokin_dist_number <- demokin_mean_number %>%
+demokin_dist_number <- demokin_variant$kin_full %>%
+  recode_demokin() %>%
+  summarise(mean_number = sum(living), 
+            .by = c(year, kin_type, age_focal)) %>%
   rowwise() %>%
   mutate(dist_tbl = list(kin_distribution(kin_type, mean_number)[, c("n", "pmf")])) %>% 
   ungroup() %>%
