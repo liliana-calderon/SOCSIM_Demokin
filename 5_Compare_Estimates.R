@@ -90,8 +90,8 @@ bind_rows(demokin_mean_number, socsim_mean_number) %>%
   labs(x = "Age of focal", y = "Mean number of living kin", color = "Model") +
   scale_color_manual(values = c( "#B22222", "#007A75"))+
   theme_graphs()
-ggsave("Graphs/1_Mean_Number.jpg", width = 16, height = 12, dpi = 300)
-ggsave("Graphs/1_Mean_Number.pdf", width = 16, height = 12, dpi = 300, device = "pdf")
+ggsave("Graphs/1_Mean_Number_Kin.jpg", width = 16, height = 12, dpi = 300)
+ggsave("Graphs/1_Mean_Number_Kin.pdf", width = 16, height = 12, dpi = 300, device = "pdf")
 
 
 # Plot mean number of all kin at each age of Focal at selected years from both models
