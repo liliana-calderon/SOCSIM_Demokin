@@ -7,8 +7,10 @@
 # based on fertility and mortality of a given year
 
 # Created on 27-03-2026
-# Last modified on 10-04-2026
+# Last modified on 29-04-2026
 #----------------------------------------------------------------------------------------------------
+library(dtplyr)
+
 estimates_age_year <- function(year_start, year_end, ego_ages_year, kin) {
   
   cat("Processing years:", year_start, "-", year_end, "\n")
@@ -50,10 +52,12 @@ estimates_age_year <- function(year_start, year_end, ego_ages_year, kin) {
   # For each ego_age_year, sum kin alive in January by year_age_kin type
   # Egos with no kin record of a given type are handled in the completion below.
   ego_level_from_kin <- ego_ages_year_kin %>%
+    lazy_dt() %>%
     group_by(year_next, age_jan_next, kin_type, pid_ego) %>%
     summarise(n_kin_alive = sum(kin_alive_next, na.rm = TRUE),
               sum_kin_age_alive = sum(kin_age_next * kin_alive_next, na.rm = TRUE),
-              .groups = "drop")
+              .groups = "drop") %>% 
+    as.data.frame()
   
   
   # Create complete ego_level df with one row per ego-year-age-kin type
@@ -62,12 +66,14 @@ estimates_age_year <- function(year_start, year_end, ego_ages_year, kin) {
     distinct(pid_ego, year_next, age_jan_next) %>% 
     # Complete with all possible combinations of year_age_kin, to check individuals with 0 kin
     crossing(kin_type = kin_types_all) %>%
+    lazy_dt() %>%
     # Add number of kin alive and sum of ages of kin alive by ego-year-age-kin type
     left_join(ego_level_from_kin,
               by = c("pid_ego", "year_next", "age_jan_next", "kin_type")) %>%
     # Egos with no kin of a given kin_type must be completes with n_kin_alive = 0.
     mutate(n_kin_alive = replace_na(n_kin_alive, 0L),
-           sum_kin_age_alive = replace_na(sum_kin_age_alive, 0))
+           sum_kin_age_alive = replace_na(sum_kin_age_alive, 0)) %>% 
+    as.data.frame()
   
   
   # Mean numbers and ages of kin by egos' age at each 1st January at age +1
@@ -173,10 +179,12 @@ estimates_sex_age_year <- function(year_start, year_end, ego_ages_year, kin) {
   # For each ego_age_year, sum kin alive in January by year_age_kin type
   # Egos with no kin record of a given type are handled in the completion below.
   ego_level_from_kin <- ego_ages_year_kin %>%
+    lazy_dt() %>%
     group_by(year_next, age_jan_next, kin_type, fem_kin, pid_ego) %>%
     summarise(n_kin_alive = sum(kin_alive_next, na.rm = TRUE),
               sum_kin_age_alive = sum(kin_age_next * kin_alive_next, na.rm = TRUE),
-              .groups = "drop")
+              .groups = "drop") %>% 
+    as.data.frame()
   
   
   # Create complete ego_level df with one row per ego-year-age-kin type
@@ -186,12 +194,14 @@ estimates_sex_age_year <- function(year_start, year_end, ego_ages_year, kin) {
     # Complete with all possible combinations of year_age_kin, to check individuals with 0 kin
     crossing(kin_type = kin_types_all, 
              fem_kin = 0:1) %>%
+    lazy_dt() %>%
     # Add number of kin alive and sum of ages of kin alive by ego-year-age-kin type
     left_join(ego_level_from_kin,
               by = c("pid_ego", "year_next", "age_jan_next", "kin_type", "fem_kin")) %>%
     # Egos with no kin of a given kin_type must be completes with n_kin_alive = 0.
     mutate(n_kin_alive = replace_na(n_kin_alive, 0L),
-           sum_kin_age_alive = replace_na(sum_kin_age_alive, 0))
+           sum_kin_age_alive = replace_na(sum_kin_age_alive, 0)) %>% 
+    as.data.frame()
   
   
   # Mean numbers and ages of kin by egos' age at each 1st January at age +1
