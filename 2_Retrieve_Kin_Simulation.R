@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 22-04-2026
+# Last modified on 04-05-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -68,6 +68,9 @@ egos <- opop %>%
 # Check length of number of egos selected
 length(egos) # 925937
 
+# The original retrieve_kin function saves as list of lists was changed as it was too large
+# Error: cannot allocate vector of size 6.3 Mb
+
 start <- Sys.time()
 # Retrieve pids of kin of individuals born 1950-2100
 kin_pids <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
@@ -76,8 +79,6 @@ end <- Sys.time()
 print(end-start)
 # Time difference of 1.80244 days
 
-# The original function saved as list of lists was changed as it was too large
-# Error: cannot allocate vector of size 6.3 Mb
 # Transform nested list into a tibble, using imap (indexed map)
 # Get the vector of kin pids for each kin type (.x) 
 # and the name (or index) of the kin type (.y)
