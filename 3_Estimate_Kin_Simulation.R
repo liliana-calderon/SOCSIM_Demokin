@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 24-04-2026
+# Last modified on 04-05-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -22,7 +22,6 @@ library(tidyverse)
 library(viridis)
 library(cowplot) # For separate legends of facetted plots
 library(ggh4x)  # To facet scales-
-#library(patchwork) # To combine ggplots
 #library(svglite) # To save svg files
 
 ## Load theme for the graphs and to convert SOCSIM time to calendar years
@@ -94,7 +93,7 @@ results <- map(1949:2100, ~ estimates_age_year(year_start = .x,
                .progress = TRUE)
 end_time <- Sys.time()
 cat("Processing time:", end_time - start_time)
-# Processing time: 1.678384 hours
+# Processing time: 2.151803
 
 # Combine and save means for all years
 mean_number_age <- results %>% map("mean_number_age") %>% bind_rows() 
@@ -137,13 +136,13 @@ mean_number_age %>%
 
 # dist_number should sum to 1 per (year_next, age_jan_next, kin_type)
 distribution_number %>% 
-  group_by(year_next, age_jan_next, kin_type, fem_kin) %>%
+  group_by(year_next, age_jan_next, kin_type) %>% # add fem_kin if necessary
   summarise(s = sum(dist_number), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
 
 # dist_age should sum to 1 per (year_next, age_jan_next, kin_type)
 distribution_age %>% 
-  group_by(year_next, age_jan_next, kin_type, fem_kin) %>%
+  group_by(year_next, age_jan_next, kin_type) %>% # add fem_kin if necessary
   summarise(s = sum(dist_age), .groups = "drop") %>%
   summarise(min = min(s), max = max(s))
 
