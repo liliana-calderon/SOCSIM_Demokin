@@ -111,8 +111,15 @@ retrieve_kin_mod <- function (opop = opop, pid = pid, KidsOf = KidsOf) {
     res[[i]][sapply(res[[i]], function(x) length(x)==0)] <- NA 
   }
   
-  return(res)
+  kin_tbl <- purrr::imap_dfr(res, ~ tibble(pid_ego = pid,
+                                           kin_type = .y,
+                                           pid_kin = .x)) %>%
+    tidyr::unnest(pid_kin) %>%
+    filter(!is.na(pid_kin))
   
+  return(kin_tbl)
+  
+  # return(res)
 }
 
 #----------------------------------------------------------------------------------------------------

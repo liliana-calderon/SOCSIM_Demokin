@@ -66,30 +66,34 @@ egos <- opop %>%
   pull(pid)
 
 # Check length of number of egos selected
-length(egos) # 464821
+length(egos) # 925937
 
 start <- Sys.time()
 # Retrieve pids of kin of individuals born 1950-2100
-kin_list <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
-save(kin_list, file = "kin_list.RData")
+kin_pids <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf) 
+save(kin_pids, file = "kin_pids.RData")
 end <- Sys.time()
 print(end-start)
-# Time difference of 5.68921 hours
+# Time difference of 1.80244 days
 
+# The original function saved as list of lists was changed as it was too large
+# Error: cannot allocate vector of size 6.3 Mb
 # Transform nested list into a tibble, using imap (indexed map)
 # Get the vector of kin pids for each kin type (.x) 
 # and the name (or index) of the kin type (.y)
-kin <- kin_list %>%
-  imap_dfr(~ tibble(
-    index_ego = 1:length(.x),
-    kin_type = .y,
-    pids_kin = .x)) %>%
-  # Match ego_index in the kin list to ego pids in the egos vector
-  mutate(pid_ego = egos[index_ego]) %>%
-  # Unnest the pids_kin list so that each row corresponds to each kin
-  unnest(pids_kin) %>%
-  filter(!is.na(pids_kin)) %>%
-  select(pid_ego, kin_type, pid_kin = pids_kin) %>% 
+# kin <- kin_list %>%
+# imap_dfr(~ tibble(
+#   index_ego = 1:length(.x),
+#   kin_type = .y,
+#   pids_kin = .x)) %>%
+# Match ego_index in the kin list to ego pids in the egos vector
+#mutate(pid_ego = egos[index_ego]) %>%
+# Unnest the pids_kin list so that each row corresponds to each kin
+#unnest(pids_kin) %>%
+# select(pid_ego, kin_type, pid_kin = pids_kin) %>% 
+
+kin <- kin_pids %>%
+  filter(!is.na(pid_kin)) %>%
   left_join(select(opop, c(pid, dob, dod, fem)), 
             by = join_by("pid_ego" == "pid")) %>% 
   rename(dob_ego = dob, dod_ego = dod, fem_ego = fem) %>% # dod = 0 for egos alive at the end
