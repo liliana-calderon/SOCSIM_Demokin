@@ -6,7 +6,7 @@
 ## using data from the World Population Prospects 2024. 
 
 # Created on 17-04-2026
-# Last modified on 04-05-2026
+# Last modified on 13-08-2026
 #----------------------------------------------------------------------------------------------------
 ## Global Settings ----
 
@@ -82,6 +82,8 @@ SWE_fert_male <- WPP_fert %>%
   select(-age_male) %>% 
   as.matrix()
 row.names(SWE_fert_male) <- 0:(nrow(SWE_fert_male) - 1)
+# Save male fertility rates used as input for Demokin (for future comparison)
+save(SWE_fert_male, file = "Measures/SWE_fert_male.RData")
 
 # Quick plot to check the fertility schedules for all years (shifted by 2 years)
 age <- 0:(nrow(SWE_fert_female) - 1)
