@@ -9,7 +9,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 26-03-2026
-# Last modified on 04-05-2026
+# Last modified on 22-09-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -52,6 +52,7 @@ final_sim_year <- 2100
 
 # Create df with one row per calendar year and age, with months for January and birthday
 ego_ages_year <- opop %>%
+  filter(fem == 1) %>% #### Only female egos
   # Set 9999 as dod for ego alive at the end of the simulation
   mutate(dod2 = if_else(dod == 0, 9999, dod)) %>%
   select(pid_ego = pid, fem_ego = fem, dob_ego = dob, dod_ego2 = dod2) %>%
