@@ -8,7 +8,7 @@
 ## Run the SOCSIM simulation with the 'rsocsim' package and read the output .opop and .omar files
 
 # Created on 23-10-2024
-# Last modified on 30-04-2026
+# Last modified on 28-09-2026
 #------------------------------------------------------------------------------------------------------
 # SOCSIM simulation: input rates and assumptions ----
 
@@ -106,7 +106,7 @@ write_socsim_fertility_rates_WPP(Country = "SWE",
 
 # As input mortality data, SOCSIM requires probabilities of death (qx) from period life tables
 # We use the whole age range of the single age life tables provided by the WPP 2024 [0-100]. 
-# The final age interval 100 is limited to one year, i.e. [100-101). 
+# The final age interval 100 is limited to one year, i.e. [100-101]. 
 
 # To convert the annual WPP probabilities to monthly 'SOCSIM' probabilities, 
 # we assume that the probability of dying is constant over the year 
@@ -174,24 +174,17 @@ presim.omar <- data.frame()
 write.table(presim.omar, "presim.omar", row.names = F, col.names = F)
 
 #------------------------------------------------------------------------------------------------------
-## Install 'rsocsim' package ----
+## Run SOCSIM simulations with 'rsocsim' package ----
+
 # The instructions to install the rsocsim package and run the simulation 
 # can be found on https://github.com/MPIDR/rsocsim/blob/main/readme.md
 
-# To get the updates, uninstall and install again the package
-# remove.packages("rsocsim")
+# Before running the installation, check that the required packages are installed 
+# install.packages(c("Rcpp", "magrittr", "dplyr", "tidyr", "future"))
 
-# Option A: Install rsocsim from source
-# To get the latest version from GitHun, RTools and remotes must be installed.
-# install_github was deprecated in devtools 2.5.0
-# install.packages("remotes")
-# remotes::install_github("MPIDR/rsocsim@v1.5.9")
+# Install rsocsim from CRAN 
+# install.packages("rsocsim")
 
-# Install rsocsim from a binary package (1.5.9) downloaded from the GitHub releases page: 
-# install.packages(file.choose(),repos=NULL,type="binary") 
-
-#------------------------------------------------------------------------------------------------------
-## Run SOCSIM simulations with 'rsocsim' package ----
 # Load rsocsim package
 library("rsocsim")
 
@@ -201,7 +194,8 @@ folder <- getwd()
 # Otherwise, the working directory must be specified after "folder <- "
 
 # Name of the supervisory file stored in the above folder:
-# Supervisory file for rates retrieved from WPP 2024, with marry after childbirth and hetfert 0
+# Supervisory file for rates retrieved from WPP 2024,
+# with marry after childbirth, bint 0 and hetfert 0
 supfile <- "Sweden_WPP.sup" 
 
 # Random number generator seed:
@@ -220,7 +214,7 @@ end <- Sys.time()
 
 print(end-start)
 
-# Time difference of 5.144692 hours for 200000 individuals in the initial population
+# Time difference of 16.64654 mins for 200000 individuals in the initial population
 
 #----------------------------------------------------------------------------------------------------
 ## Read the output .opop and .omar files ----
