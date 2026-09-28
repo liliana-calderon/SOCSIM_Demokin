@@ -40,3 +40,6 @@ sim_results_*
 
 # Graphs
 Graphs/
+
+# Previous simulations 
+z_sim_*
