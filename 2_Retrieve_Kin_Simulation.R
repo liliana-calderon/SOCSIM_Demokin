@@ -8,7 +8,7 @@
 # c.f. script 0_Set_Up_Simulation.R
 
 # Created on 24-03-2026
-# Last modified on 04-05-2026
+# Last modified on 28-09-2026
 #----------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 
@@ -77,21 +77,7 @@ kin_pids <- retrieve_kin_mod(opop = opop, pid = egos, KidsOf = KidsOf)
 save(kin_pids, file = "kin_pids.RData")
 end <- Sys.time()
 print(end-start)
-# Time difference of 1.80244 days
-
-# Transform nested list into a tibble, using imap (indexed map)
-# Get the vector of kin pids for each kin type (.x) 
-# and the name (or index) of the kin type (.y)
-# kin <- kin_list %>%
-# imap_dfr(~ tibble(
-#   index_ego = 1:length(.x),
-#   kin_type = .y,
-#   pids_kin = .x)) %>%
-# Match ego_index in the kin list to ego pids in the egos vector
-#mutate(pid_ego = egos[index_ego]) %>%
-# Unnest the pids_kin list so that each row corresponds to each kin
-#unnest(pids_kin) %>%
-# select(pid_ego, kin_type, pid_kin = pids_kin) %>% 
+# Time difference of 11.79935 hours
 
 kin <- kin_pids %>%
   filter(!is.na(pid_kin)) %>%
@@ -162,5 +148,5 @@ mean_kin_birth %>%
        colour = "Kin Type", linetype = "Kin Sex") +
   guides(colour = guide_legend(order = 1),
          linetype = guide_legend(order = 2))
-ggsave(file="Graphs/Socsim_Mean_Number_Kin_Birth_Time.jpeg", width=18, height=9, dpi=300)
-ggsave(file="Graphs/Socsim_Mean_Number_Kin_Birth_Time.pdf", width=18, height=9, dpi=300, device = "pdf")
+#ggsave(file="Graphs/Socsim_Mean_Number_Kin_Birth_Time.jpeg", width=18, height=9, dpi=300)
+#ggsave(file="Graphs/Socsim_Mean_Number_Kin_Birth_Time.pdf", width=18, height=9, dpi=300, device = "pdf")
