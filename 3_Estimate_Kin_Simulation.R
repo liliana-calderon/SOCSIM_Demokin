@@ -79,6 +79,8 @@ ego_ages_year <- opop %>%
   select(pid_ego, fem_ego, dob_ego, year, year_next,
        month_jan, age_jan, month_jan_next, age_jan_next, dod_ego2)
 
+# Save 
+save(ego_ages_year, file = "Measures/ego_ages_year.RData")
 #----------------------------------------------------------------------------------------------------
 ## Estimate mean and distributions of numbers and ages of kin by age at every 1st January 1950-2101 ----
 # Results for 01.01.1950 correspond to the stable setting
