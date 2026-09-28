@@ -1,6 +1,6 @@
 ***************************************************************************
 * Supervisory file for SOCSIM microsimulation for Sweden, 1950-2100
-* Modified on 02.04.2026
+* Modified on 24.09.2026
 ***************************************************************************
 * This simulation uses as input age-specific fertility rates and
 * age-specific probabilities of death (qx)  
@@ -15,7 +15,7 @@ marriage_after_childbirth 1
 marriage_eval distribution
 marriage_queues 1
 hetfert 0
-bint 12
+bint 0
 
 ***********************************************************************
 * Pre-simulation (200 years) using WPP rates for 1950
