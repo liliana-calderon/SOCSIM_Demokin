@@ -6,7 +6,7 @@
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
 
 # Created on 08-04-2026
-# Last modified on 04-05-2026
+# Last modified on 29-09-2026
 #------------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -60,7 +60,7 @@ load("Measures/demokin_variant.RData")
 ## Plot mean numbers of kin by age at selected years ----
 
 # Select years to plot
-years_plot <- c(1950, 2000, 2050, 2100) 
+years_plot <- c(1950, 2050) 
 
 # Select kin types to plot
 kin_types_plot <- c("Grandparents", "Siblings", "Grandchildren")
@@ -70,20 +70,21 @@ demokin_mean_number <- demokin_variant$kin_full %>%
   recode_demokin() %>%
   summarise(mean_number = sum(living), 
             .by = c(year, kin_type, age_focal)) %>%
-  mutate(Model = "Analytical")
+  mutate(Model = "Analytical (DemoKin)")
 
 # Get mean number of kin at each age of Focal at each selected year from Socsim
 socsim_mean_number <- mean_number_age %>%
-  filter(year_next %in% years_plot) %>%
+  filter(year_next %in% years_plot) %>% 
   rename(year = year_next, age_focal = age_jan_next) %>%
   filter(!is.na(mean_number)) %>%
   recode_kin() %>%
   select(year, kin_type, age_focal, mean_number) %>% 
-  mutate(Model = "Microsimulation")
+  mutate(Model = "Microsimulation (Socsim)")
 
 # Plot mean number of selected kin at each age of Focal at selected years from both models
 bind_rows(demokin_mean_number, socsim_mean_number) %>% 
   filter(kin_type %in% kin_types_plot & mean_number > 0) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = mean_number, color = Model)) +
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "free_y") +
@@ -97,6 +98,7 @@ ggsave("Graphs/1_Mean_Number_Kin.pdf", width = 16, height = 12, dpi = 300, devic
 # Plot mean number of all kin at each age of Focal at selected years from both models
 bind_rows(demokin_mean_number, socsim_mean_number) %>% 
   filter(mean_number > 0) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = mean_number, color = Model)) +
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "free_y") +
@@ -110,7 +112,7 @@ ggsave("Graphs/App_Mean_Number_Kin.pdf", width = 20, height = 28, dpi = 300, dev
 ## Plot mean ages of kin by age at selected years ----
 
 # Select years to plot
-years_plot <- c(1950, 2000, 2050, 2100)
+years_plot <- c(1950, 2050)
 
 # Select kin types to plot
 kin_types_plot <- c("Grandparents", "Siblings", "Grandchildren")
@@ -120,7 +122,7 @@ demokin_mean_age <- demokin_variant$kin_full %>%
   recode_demokin() %>%
   summarise(mean_age = weighted.mean(age_kin, living, na.rm = TRUE),
             .by = c(year, kin_type, age_focal)) %>% 
-  mutate(Model = "Analytical")
+  mutate(Model = "Analytical (DemoKin)")
 
 # Get mean age of kin at each age of Focal at each selected year from Socsim
 socsim_mean_age <- mean_number_age %>%
@@ -129,11 +131,12 @@ socsim_mean_age <- mean_number_age %>%
   filter(!is.na(mean_age)) %>%
   recode_kin() %>%
   select(year, kin_type, age_focal, mean_age) %>% 
-  mutate(Model = "Microsimulation")
+  mutate(Model = "Microsimulation (Socsim)")
 
 # Plot mean age of kin at each age of Focal at selected years from both models 
 bind_rows(demokin_mean_age, socsim_mean_age) %>% 
   filter(kin_type %in% kin_types_plot & !is.na(mean_age)) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = mean_age, color = Model)) +
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "free_y") +
@@ -147,12 +150,13 @@ ggsave("Graphs/2_Mean_Age_Kin.pdf", width = 16, height = 12, dpi = 300, device =
 # Plot mean age of kin at each age of Focal at selected years from both models 
 bind_rows(demokin_mean_age, socsim_mean_age) %>% 
   filter(!is.na(mean_age)) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = mean_age, color = Model)) +
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "free_y") +
   labs(x = "Age of focal", y = "Mean age of kin", color = "Model") +
   scale_color_manual(values = c("#B22222", "#007A75")) +
-  theme_graphs()
+  theme_graphs() + theme(strip.text = element_text(size=18))
 ggsave("Graphs/App_Mean_Age_Kin.jpg", width = 20, height = 28, dpi = 300)
 ggsave("Graphs/App_Mean_Age_Kin.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
 
@@ -166,6 +170,7 @@ demokin_mean_age_sex <- demokin_variant$kin_full %>%
 
 # Plot mean age of kin by sex at each age of Focal at selected years for both models
 bind_rows(demokin_mean_age_sex, socsim_mean_age) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = mean_age, linetype = Model, color = kin_type)) +
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "free_y") +
@@ -175,7 +180,7 @@ bind_rows(demokin_mean_age_sex, socsim_mean_age) %>%
        y = "Mean age of kin",
        color = "Kin type",
        linetype = "Model/Sex") +
-  theme_graphs()
+  theme_graphs() 
 ggsave("Graphs/App_Mean_Age_Kin_Sex.jpg", width = 20, height = 28, dpi = 300)
 ggsave("Graphs/App_Mean_Age_Kin_Sex.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
 
@@ -183,7 +188,7 @@ ggsave("Graphs/App_Mean_Age_Kin_Sex.pdf", width = 20, height = 28, dpi = 300, de
 ## Calculate the distribution of numbers of kin by year, kin type and age of focal ----
 
 # Select years to plot
-years_plot <- c(1950, 2000, 2050, 2100)
+years_plot <- c(1950, 2050)
 
 # Select kin types to plot
 kin_types_plot <- c("Grandparents", "Siblings", "Grandchildren")
@@ -193,7 +198,7 @@ socsim_dist_number <- distribution_number %>%
   rename(age_focal = age_jan_next, year = year_next) %>%
   recode_kin() %>% 
   filter(year %in% years_plot) %>%
-  mutate(Model = "Microsimulation")
+  mutate(Model = "Microsimulation (Socsim)")
 
 # Apply the kin_distribution() function to the Demokin output to get the distribution
 demokin_dist_number <- demokin_mean_number %>%
@@ -203,7 +208,7 @@ demokin_dist_number <- demokin_mean_number %>%
   unnest(dist_tbl) %>% 
   rename(n_kin_alive = n, dist_number = pmf) %>% 
   filter(year %in% years_plot) %>%
-  mutate(Model = "Analytical")
+  mutate(Model = "Analytical (DemoKin)")
 
 # Define maximum number of kin to plot (e.g., 10)
 n_max <- 11
@@ -212,7 +217,7 @@ n_max <- 11
 dist_number_capped <- bind_rows(demokin_dist_number, socsim_dist_number) %>%
   mutate(year = factor(year, levels = years_plot),
          kin_type = factor(kin_type),
-         Model = factor(Model, levels = c("Analytical", "Microsimulation")),
+         Model = factor(Model, levels = c("Analytical (DemoKin)", "Microsimulation (Socsim)")),
          n_kin_alive = as.integer(n_kin_alive),
          # Define maximum number of kin to plot (e.g., 11)
          n_plot = if_else(n_kin_alive >= n_max, n_max, n_kin_alive)) %>%
@@ -225,6 +230,7 @@ dist_number_capped <- bind_rows(demokin_dist_number, socsim_dist_number) %>%
 # Plot the distribution of numbers of selected kin from both models with capped number of kin
 dist_number_capped %>%
   filter(kin_type %in% kin_types_plot) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = dist_number, fill = n_plot)) +
   geom_col(width = 1) +
   facet_grid(kin_type ~ year + Model) +
@@ -238,6 +244,7 @@ ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 14,  dpi = 3
 
 # Plot the distribution of numbers of all kin from both models with capped number of kin
 dist_number_capped %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = dist_number, fill = n_plot)) +
   geom_col(width = 1) +
   facet_grid(kin_type ~ year + Model) +
@@ -245,8 +252,8 @@ dist_number_capped %>%
   labs(x = "Age of focal individual", y = "Proportion") +
   theme_graphs() + theme(strip.text = element_text(size=18)) +
   guides(fill = guide_legend(override.aes = list(color = 0), nrow = 1, byrow = TRUE))
-ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 20, height = 28,  dpi = 300)
-ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 28, height = 28,  dpi = 300, device = "pdf")
+ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 22, height = 32,  dpi = 300)
+ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 22, height = 32,  dpi = 300, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
 ## Proportion of individuals with null or large kin sets
@@ -277,32 +284,34 @@ prop_null_large <- bind_rows(demokin_dist_number, socsim_dist_number) %>%
          year = factor(year, levels = years_plot)) 
 
 prop_null_large %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   ggplot(aes(x = age_focal, y = proportion, color = Model, linetype = kin_size)) +
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "fixed") +
   labs(x = "Age of focal individual", y = "Proportion",
        color = "Model", linetype = "Kin size") +
-  scale_color_manual(values = c("Analytical" = "#B22222", "Microsimulation" = "#007A75")) +
+  scale_color_manual(values = c("Analytical (DemoKin)" = "#B22222", "Microsimulation (Socsim)" = "#007A75")) +
   scale_linetype_manual(values = c("Null kin" = "dashed",
                                    "Large kin (≥ 75th pct)" = "solid")) +
-  theme_graphs()
+  theme_graphs() + theme(strip.text = element_text(size=18))
 ggsave("Graphs/App_Proportion_Null_Large.jpg", width = 20, height = 28, dpi = 300)
 ggsave("Graphs/App_Proportion_Null_Large.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
 #------------------------------------------------------------------------------------------------------
 ## Plot distribution of ages of kin at selected years and ages of Focal ----
 
 ages_plot <- c(0, 20, 40, 60, 80)
-years_plot <- c(1950, 2000, 2050, 2100)
+years_plot <- c(1950, 2050)
 
 # Calculate distribution of ages of kin at selected years and ages of Focal from Demokin
 demokin_dist_age <- demokin_variant$kin_full %>%
   recode_demokin() %>%
-  filter(year %in% years_plot & age_focal %in% ages_plot & living > 0) %>%
+  filter(age_focal %in% ages_plot & living > 0) %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   summarise(n_kin = sum(living), 
             .by = c(year, kin_type, age_focal, age_kin)) %>%
   group_by(year, kin_type, age_focal) %>%
   mutate(dist_age = n_kin / sum(n_kin, na.rm = TRUE), 
-         Model = "Analytical") %>% 
+         Model = "Analytical (DemoKin)") %>% 
   ungroup()
 
 # Wrangle socsim distribution of ages of kin at selected years and ages of Focal from Socsim
@@ -312,7 +321,7 @@ socsim_dist_age <- distribution_age %>%
          age_focal = age_jan_next,
          age_kin = kin_age_next) %>%
   recode_kin() %>% 
-  mutate(Model = "Microsimulation")
+  mutate(Model = "Microsimulation (Socsim)")
 
 # Plot distribution of ages of kin at selected years and ages of Focal from models
 bind_rows(demokin_dist_age, socsim_dist_age) %>% 
@@ -330,6 +339,7 @@ dist_age_data <- bind_rows(demokin_dist_age, socsim_dist_age)
 
 # Plot distribution of ages of selected kin
 plots_dist_age <- dist_age_data %>%
+  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
   filter(kin_type %in% kin_types_plot) %>%
   group_split(year) %>%
   map(function(df) {
@@ -348,8 +358,8 @@ plots_dist_age <- dist_age_data %>%
   })
 
 cowplot::plot_grid(plotlist = plots_dist_age, ncol = 1)
-ggsave("Graphs/4_Distribution_Age_Kin.jpg", width = 20, height = 28, dpi = 300)
-ggsave("Graphs/4_Distribution_Age_Kin.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+ggsave("Graphs/4_Distribution_Age_Kin.jpg", width = 20, height = 24, dpi = 300)
+ggsave("Graphs/4_Distribution_Age_Kin.pdf", width = 20, height = 24, dpi = 300, device = "pdf")
 
 
 # Plot distribution of ages of all kin for the appendix
