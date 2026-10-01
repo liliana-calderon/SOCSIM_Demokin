@@ -63,7 +63,7 @@ library(readr)
 # Load functions to write SOCSIM rate files using WPP data ----
 source("Functions/Functions_Input_Rates.R")
 #----------------------------------------------------------------------------------------------------
-# Download fertility and mortality data from the WPP 2024 and save as .csv files ---
+# Download fertility and mortality data from the WPP 2024 and save as .csv files ----
 
 # To read gz files directly, fread() requires `R.utils` package
 library(R.utils)
@@ -194,8 +194,8 @@ folder <- getwd()
 # Otherwise, the working directory must be specified after "folder <- "
 
 # Name of the supervisory file stored in the above folder:
-# Supervisory file for rates retrieved from WPP 2024,
-# with marry after childbirth, bint 0 and hetfert 0
+# Supervisory file for rates retrieved from WPP 2024, with marry after childbirth and hetfert 0
+# Main analysis with bint 0
 supfile <- "Sweden_WPP.sup" 
 
 # Random number generator seed:
@@ -214,7 +214,7 @@ end <- Sys.time()
 
 print(end-start)
 
-# Time difference of 16.64654 mins for 200000 individuals in the initial population
+# Time difference of 16.64654 mins for 200000 individuals in the initial population for bint0
 
 #----------------------------------------------------------------------------------------------------
 ## Read the output .opop and .omar files ----
