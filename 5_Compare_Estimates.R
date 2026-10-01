@@ -6,7 +6,7 @@
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
 
 # Created on 08-04-2026
-# Last modified on 29-09-2026
+# Last modified on 30-09-2026
 #------------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -91,8 +91,8 @@ bind_rows(demokin_mean_number, socsim_mean_number) %>%
   labs(x = "Age of focal", y = "Mean number of living kin", color = "Model") +
   scale_color_manual(values = c( "#B22222", "#007A75"))+
   theme_graphs()
-ggsave("Graphs/1_Mean_Number_Kin.jpg", width = 16, height = 12, dpi = 300)
-ggsave("Graphs/1_Mean_Number_Kin.pdf", width = 16, height = 12, dpi = 300, device = "pdf")
+ggsave("Graphs/1_Mean_Number_Kin.jpg", width = 16, height = 12, dpi = 600)
+ggsave("Graphs/1_Mean_Number_Kin.pdf", width = 16, height = 12, dpi = 600, device = "pdf")
 
 
 # Plot mean number of all kin at each age of Focal at selected years from both models
@@ -105,8 +105,8 @@ bind_rows(demokin_mean_number, socsim_mean_number) %>%
   labs(x = "Age of focal", y = "Mean number of living kin", color = "Model") +
   scale_color_manual(values = c( "#B22222", "#007A75"))+
   theme_graphs()
-ggsave("Graphs/App_Mean_Number_Kin.jpg", width = 20, height = 28, dpi = 300)
-ggsave("Graphs/App_Mean_Number_Kin.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+ggsave("Graphs/App_Mean_Number_Kin.jpg", width = 20, height = 28, dpi = 600)
+ggsave("Graphs/App_Mean_Number_Kin.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
 ## Plot mean ages of kin by age at selected years ----
@@ -143,8 +143,8 @@ bind_rows(demokin_mean_age, socsim_mean_age) %>%
   labs(x = "Age of focal", y = "Mean age of kin", color = "Model") +
   scale_color_manual(values = c("#B22222", "#007A75")) +
   theme_graphs()
-ggsave("Graphs/2_Mean_Age_Kin.jpg", width = 16, height = 12, dpi = 300)
-ggsave("Graphs/2_Mean_Age_Kin.pdf", width = 16, height = 12, dpi = 300, device = "pdf")
+ggsave("Graphs/2_Mean_Age_Kin.jpg", width = 16, height = 12, dpi = 600)
+ggsave("Graphs/2_Mean_Age_Kin.pdf", width = 16, height = 12, dpi = 600, device = "pdf")
 
 
 # Plot mean age of kin at each age of Focal at selected years from both models 
@@ -157,8 +157,8 @@ bind_rows(demokin_mean_age, socsim_mean_age) %>%
   labs(x = "Age of focal", y = "Mean age of kin", color = "Model") +
   scale_color_manual(values = c("#B22222", "#007A75")) +
   theme_graphs() + theme(strip.text = element_text(size=18))
-ggsave("Graphs/App_Mean_Age_Kin.jpg", width = 20, height = 28, dpi = 300)
-ggsave("Graphs/App_Mean_Age_Kin.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+ggsave("Graphs/App_Mean_Age_Kin.jpg", width = 20, height = 28, dpi = 600)
+ggsave("Graphs/App_Mean_Age_Kin.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 
 
 # Mean age of of kin by sex at each age of Focal at selected years for Demokin
@@ -181,8 +181,8 @@ bind_rows(demokin_mean_age_sex, socsim_mean_age) %>%
        color = "Kin type",
        linetype = "Model/Sex") +
   theme_graphs() 
-ggsave("Graphs/App_Mean_Age_Kin_Sex.jpg", width = 20, height = 28, dpi = 300)
-ggsave("Graphs/App_Mean_Age_Kin_Sex.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+ggsave("Graphs/App_Mean_Age_Kin_Sex.jpg", width = 20, height = 28, dpi = 600)
+ggsave("Graphs/App_Mean_Age_Kin_Sex.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 
 #----------------------------------------------------------------------------------------------------
 ## Calculate the distribution of numbers of kin by year, kin type and age of focal ----
@@ -238,8 +238,8 @@ dist_number_capped %>%
   labs(x = "Age of focal individual", y = "Proportion") +
   theme_graphs() + theme(strip.text = element_text(size=18)) +
   guides(fill = guide_legend(override.aes = list(color = 0), nrow = 1, byrow = TRUE))
-ggsave("Graphs/3_Distribution_Number_Kin.jpg", width = 20, height = 14,  dpi = 300)
-ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 14,  dpi = 300, device = "pdf")
+ggsave("Graphs/3_Distribution_Number_Kin.jpg", width = 20, height = 14,  dpi = 600)
+ggsave("Graphs/3_Distribution_Number_Kin.pdf", width = 20, height = 14,  dpi = 600, device = "pdf")
 
 
 # Plot the distribution of numbers of all kin from both models with capped number of kin
@@ -252,11 +252,11 @@ dist_number_capped %>%
   labs(x = "Age of focal individual", y = "Proportion") +
   theme_graphs() + theme(strip.text = element_text(size=18)) +
   guides(fill = guide_legend(override.aes = list(color = 0), nrow = 1, byrow = TRUE))
-ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 22, height = 32,  dpi = 300)
-ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 22, height = 32,  dpi = 300, device = "pdf")
+ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 22, height = 32,  dpi = 600)
+ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 22, height = 32,  dpi = 600, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
-## Proportion of individuals with null or large kin sets
+## Proportion of individuals with null or large kin sets ----
 
 # Helper function to calculate the cut point for large kin sets based on the 75 quantile of the distribution
 wtd_quant <- function(x, w, quant = 0.75) {
@@ -294,8 +294,8 @@ prop_null_large %>%
   scale_linetype_manual(values = c("Null kin" = "dashed",
                                    "Large kin (≥ 75th pct)" = "solid")) +
   theme_graphs() + theme(strip.text = element_text(size=18))
-ggsave("Graphs/App_Proportion_Null_Large.jpg", width = 20, height = 28, dpi = 300)
-ggsave("Graphs/App_Proportion_Null_Large.pdf", width = 20, height = 28, dpi = 300, device = "pdf")
+ggsave("Graphs/App_Proportion_Null_Large.jpg", width = 20, height = 28, dpi = 600)
+ggsave("Graphs/App_Proportion_Null_Large.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 #------------------------------------------------------------------------------------------------------
 ## Plot distribution of ages of kin at selected years and ages of Focal ----
 
@@ -358,12 +358,12 @@ plots_dist_age <- dist_age_data %>%
   })
 
 cowplot::plot_grid(plotlist = plots_dist_age, ncol = 1)
-ggsave("Graphs/4_Distribution_Age_Kin.jpg", width = 20, height = 24, dpi = 300)
-ggsave("Graphs/4_Distribution_Age_Kin.pdf", width = 20, height = 24, dpi = 300, device = "pdf")
+ggsave("Graphs/4_Distribution_Age_Kin.jpg", width = 20, height = 26, dpi = 800)
+ggsave("Graphs/4_Distribution_Age_Kin.pdf", width = 20, height = 26, dpi = 800, device = "pdf")
 
 
 # Plot distribution of ages of all kin for the appendix
-plots_dist_age <- dist_age_data %>%
+plots_dist_age_app <- dist_age_data %>%
   group_split(year) %>%
   map(function(df) {
     yr <- unique(df$year)
@@ -380,6 +380,6 @@ plots_dist_age <- dist_age_data %>%
             axis.text.y = element_text(size = 14))
   })
 
-cowplot::plot_grid(plotlist = plots_dist_age, ncol = 1)
-ggsave("Graphs/App_Distribution_Age_Kin.jpg", width = 22, height = 32, dpi = 300)
-ggsave("Graphs/App_Distribution_Age_Kin.pdf", width = 22, height = 32, dpi = 300, device = "pdf")
+cowplot::plot_grid(plotlist = plots_dist_age_app, ncol = 1)
+ggsave("Graphs/App_Distribution_Age_Kin.jpg", width = 22, height = 32, dpi = 1000)
+ggsave("Graphs/App_Distribution_Age_Kin.pdf", width = 22, height = 32, dpi = 1000, device = "pdf")
