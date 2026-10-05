@@ -6,7 +6,7 @@
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
 
 # Created on 08-04-2026
-# Last modified on 30-09-2026
+# Last modified on 05-10-2026
 #------------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -109,6 +109,50 @@ ggsave("Graphs/App_Mean_Number_Kin.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Mean_Number_Kin.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 
 #------------------------------------------------------------------------------------------------------
+## Difference in the mean number of kin (Socsim - DemoKin) ----
+
+# Positive values indicate that SOCSIM estimates are larger than DemoKin.
+# Negative values indicate that SOCSIM estimates are smaller than DemoKin.
+
+mean_number_diff <- demokin_mean_number %>%
+  select(year, kin_type, age_focal,
+         mean_number_demokin = mean_number) %>%
+  inner_join(socsim_mean_number %>%
+      select(year, kin_type, age_focal,
+             mean_number_socsim = mean_number),
+      by = c("year", "kin_type", "age_focal")) %>%
+  mutate(difference = mean_number_socsim - mean_number_demokin,
+         abs_difference = abs(difference))
+
+# Get a glimpse on the comparison table
+mean_number_diff %>% glimpse()
+
+# Plot the difference in mean number of kin by age at selected years
+mean_number_diff %>%
+  filter(year %in% years_plot) %>%
+  ggplot(aes(x = age_focal, y = difference)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+  geom_line(linewidth = 1, colour = "#594E4C") +
+  facet_grid(kin_type ~ year, scales = "free_y") +
+  labs(x = "Age of focal individual",
+       y = "Difference in mean number of kin (Socsim - DemoKin)") +
+  theme_graphs() + theme(strip.text = element_text(size=18))
+ggsave("Graphs/App_Mean_Number_Kin_Difference.jpg", 
+       width = 20, height = 28, dpi = 200)
+ggsave("Graphs/App_Mean_Number_Kin_Difference.pdf", 
+       width = 20, height = 28, dpi = 600, device = "pdf")
+
+# Summary measures of agreement across focal ages
+mean_number_diff %>%
+  group_by(year, kin_type) %>%
+  summarise(n_age = sum(!is.na(difference)),
+            mean_difference = mean(difference, na.rm = TRUE),
+            min_difference = min(difference, na.rm = TRUE),
+            max_difference = max(difference, na.rm = TRUE),
+            .groups = "drop") %>% 
+  filter(kin_type %in% kin_types_plot)
+
+#------------------------------------------------------------------------------------------------------
 ## Plot mean ages of kin by age at selected years ----
 
 # Select years to plot
@@ -160,29 +204,53 @@ bind_rows(demokin_mean_age, socsim_mean_age) %>%
 ggsave("Graphs/App_Mean_Age_Kin.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Mean_Age_Kin.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 
+#------------------------------------------------------------------------------------------------------
+## Difference in the mean age of kin (Socsim - DemoKin) ----
 
-# Mean age of of kin by sex at each age of Focal at selected years for Demokin
-demokin_mean_age_sex <- demokin_variant$kin_full %>% 
-  recode_demokin() %>%
-  summarise(mean_age = weighted.mean(age_kin, living, na.rm = TRUE),
-            .by = c(year, kin_type, age_focal, sex_kin)) %>% 
-  mutate(Model = paste0("Demokin_", sex_kin))
+# Positive values indicate that SOCSIM estimates are larger than DemoKin.
+# Negative values indicate that SOCSIM estimates are smaller than DemoKin.
 
-# Plot mean age of kin by sex at each age of Focal at selected years for both models
-bind_rows(demokin_mean_age_sex, socsim_mean_age) %>%
-  filter(year %in% years_plot) %>% # Keep only 1950 and 2050 for plotting
-  ggplot(aes(x = age_focal, y = mean_age, linetype = Model, color = kin_type)) +
-  geom_line(linewidth = 1) +
+mean_age_diff <- demokin_mean_age %>%
+  select(year, kin_type, age_focal,
+         mean_age_demokin = mean_age) %>%
+  inner_join(socsim_mean_age %>%
+      select(year, kin_type, age_focal,
+             mean_age_socsim = mean_age),
+    by = c("year", "kin_type", "age_focal")) %>%
+  # Mean ages are only meaningful when both models estimate living kin
+  filter(!is.na(mean_age_demokin),
+         !is.na(mean_age_socsim)) %>%
+  mutate(difference = mean_age_socsim - mean_age_demokin,
+         abs_difference = abs(difference))
+
+# Get a glimpse on the comparison table
+mean_age_diff %>% glimpse()
+
+# Plot the difference in mean age of kin by age at selected years
+mean_age_diff %>%
+  filter(year %in% years_plot) %>%
+  ggplot(aes(x = age_focal, y = difference)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+  geom_line(linewidth = 1, colour = "#594E4C") +
   facet_grid(kin_type ~ year, scales = "free_y") +
-  scale_color_viridis_d(option = "D", direction = 1) +
-  scale_linetype_manual(values = c("dashed", "dotted", "solid")) +
-  labs(x = "Age of focal",
-       y = "Mean age of kin",
-       color = "Kin type",
-       linetype = "Model/Sex") +
-  theme_graphs() 
-ggsave("Graphs/App_Mean_Age_Kin_Sex.jpg", width = 20, height = 28, dpi = 600)
-ggsave("Graphs/App_Mean_Age_Kin_Sex.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
+  labs(x = "Age of focal individual",
+       y = "Difference in mean age of kin (Socsim - DemoKin)") +
+  theme_graphs() +
+  theme(strip.text = element_text(size = 18))
+
+ggsave("Graphs/App_Mean_Age_Kin_Difference.jpg", width = 20, height = 28, dpi = 600)
+ggsave("Graphs/App_Mean_Age_Kin_Difference.pdf", width = 20, height = 28, dpi = 600, 
+       device = "pdf")
+
+# Summary measures of agreement across focal ages
+mean_age_diff %>%
+  group_by(year, kin_type) %>%
+  summarise(n_age = sum(!is.na(difference)),
+            mean_difference = mean(difference, na.rm = TRUE),
+            min_difference = min(difference, na.rm = TRUE),
+            max_difference = max(difference, na.rm = TRUE),
+            .groups = "drop") %>%
+  filter(kin_type %in% kin_types_plot)
 
 #----------------------------------------------------------------------------------------------------
 ## Calculate the distribution of numbers of kin by year, kin type and age of focal ----
@@ -252,8 +320,63 @@ dist_number_capped %>%
   labs(x = "Age of focal individual", y = "Proportion") +
   theme_graphs() + theme(strip.text = element_text(size=18)) +
   guides(fill = guide_legend(override.aes = list(color = 0), nrow = 1, byrow = TRUE))
-ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 22, height = 32,  dpi = 600)
-ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 22, height = 32,  dpi = 600, device = "pdf")
+ggsave("Graphs/App_Distribution_Number_Kin.jpg", width = 22, height = 30,  dpi = 600)
+ggsave("Graphs/App_Distribution_Number_Kin.pdf", width = 22, height = 30,  dpi = 600, device = "pdf")
+
+#------------------------------------------------------------------------------------------------------
+## Difference in the distribution of the number of kin (Socsim - DemoKin) ----
+
+# Positive values indicate that SOCSIM produces a higher proportion of
+# individuals to that number-of-kin category than DemoKin.
+# Negative values indicate that SOCSIM produces a lower proportion.
+
+# Put the two model distributions in separate columns.
+# Missing combinations are treated as zero probability.
+dist_number_diff <- dist_number_capped %>%
+  select(year, kin_type, age_focal, n_plot, Model, dist_number) %>%
+  pivot_wider(names_from = Model,
+              values_from = dist_number,
+              values_fill = 0) %>%
+  rename(dist_number_demokin = `Analytical (DemoKin)`,
+         dist_number_socsim = `Microsimulation (Socsim)`) %>%
+  mutate(difference = dist_number_socsim - dist_number_demokin,
+         abs_difference = abs(difference))
+
+# Get a glimpse on the comparison table
+dist_number_diff %>% glimpse()
+
+
+# Plot the difference in the distribution of the number of kin 
+# by focal age, kin type, year, and number of kin
+
+dist_number_diff %>%
+  filter(year %in% years_plot) %>%
+  ggplot(aes(x = age_focal, y = difference, colour = n_plot, group = n_plot)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+  geom_line(linewidth = 1) +
+  facet_grid(kin_type ~ year, scales = "free_y") +
+  scale_colour_viridis_d(option = "F", direction = -1, name = "Number of kin") +
+  labs(x = "Age of focal individual", y = "Difference in proportional distribution of kin numbers (Socsim - DemoKin)") +
+  theme_graphs() + theme(strip.text = element_text(size = 18))
+
+ggsave("Graphs/App_Distribution_Number_Kin_Difference.jpg", width = 20, height = 28, dpi = 200)
+ggsave("Graphs/App_Distribution_Number_Kin_Difference.pdf", width = 20, height = 28, dpi = 600,
+  device = "pdf")
+
+# Overall summary across focal ages and number-of-kin
+
+dist_number_agreement_summary <- dist_number_diff %>%
+  group_by(year, kin_type) %>%
+  summarise(n_comparisons = sum(!is.na(difference)),
+            mean_difference = mean(difference, na.rm = TRUE),
+            mean_abs_difference = mean(abs_difference, na.rm = TRUE),
+            min_difference = min(difference, na.rm = TRUE),
+            max_difference = max(difference, na.rm = TRUE),
+            max_abs_difference = max(abs_difference, na.rm = TRUE),
+            .groups = "drop") %>%
+  filter(kin_type %in% kin_types_plot)
+
+dist_number_agreement_summary
 
 #------------------------------------------------------------------------------------------------------
 ## Proportion of individuals with null or large kin sets ----
@@ -296,6 +419,7 @@ prop_null_large %>%
   theme_graphs() + theme(strip.text = element_text(size=18))
 ggsave("Graphs/App_Proportion_Null_Large.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Proportion_Null_Large.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
+
 #------------------------------------------------------------------------------------------------------
 ## Plot distribution of ages of kin at selected years and ages of Focal ----
 
@@ -359,6 +483,7 @@ plots_dist_age <- dist_age_data %>%
 
 cowplot::plot_grid(plotlist = plots_dist_age, ncol = 1)
 ggsave("Graphs/4_Distribution_Age_Kin.jpg", width = 20, height = 26, dpi = 800)
+ggsave("Graphs/4_Distribution_Age_Kin.svg", width = 20, height = 26, dpi = 800, device = "svg")
 ggsave("Graphs/4_Distribution_Age_Kin.pdf", width = 20, height = 26, dpi = 800, device = "pdf")
 
 
@@ -381,5 +506,55 @@ plots_dist_age_app <- dist_age_data %>%
   })
 
 cowplot::plot_grid(plotlist = plots_dist_age_app, ncol = 1)
-ggsave("Graphs/App_Distribution_Age_Kin.jpg", width = 22, height = 32, dpi = 1000)
-ggsave("Graphs/App_Distribution_Age_Kin.pdf", width = 22, height = 32, dpi = 1000, device = "pdf")
+ggsave("Graphs/App_Distribution_Age_Kin.jpg", width = 22, height = 30, dpi = 1000)
+ggsave("Graphs/App_Distribution_Age_Kin.svg", width = 22, height = 30, dpi = 1000, device = "svg")
+ggsave("Graphs/App_Distribution_Age_Kin.pdf", width = 22, height = 30, dpi = 1000, device = "pdf")
+
+
+#------------------------------------------------------------------------------------------------------
+## Difference in the distribution of the ages of kin (Socsim - DemoKin) ----
+
+# Positive values indicate that SOCSIM produces a higher proportion of
+# living kin to that kin-age category than DemoKin.
+# Negative values indicate that SOCSIM produces a lower proportion.
+
+# Put the two model distributions in separate columns.
+# Missing combinations are treated as zero probability.
+dist_age_diff <- bind_rows(demokin_dist_age, socsim_dist_age) %>%
+  select(year, kin_type, age_focal, age_kin, Model, dist_age) %>%
+  pivot_wider(names_from = Model, values_from = dist_age, values_fill = 0) %>%
+  rename(dist_age_demokin = `Analytical (DemoKin)`,
+         dist_age_socsim = `Microsimulation (Socsim)`) %>%
+  mutate(difference = dist_age_socsim - dist_age_demokin,
+         abs_difference = abs(difference))
+
+# Get a glimpse on the comparison table
+dist_age_diff %>% glimpse()
+
+
+# Plot the difference in the distribution of ages of kin
+# by focal age, kin type, year, and age of kin
+dist_age_diff %>% 
+  filter(year %in% years_plot, age_focal %in% ages_plot) %>%
+  ggplot(aes(x = age_kin, y = difference)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+  geom_line(linewidth = 1, color = "#594E4C") +
+  facet_grid(kin_type ~ age_focal + year, scales = "free_y") +
+  labs(x = "Age of kin", y = "Difference in proportional distribution of ages (Socsim - DemoKin)") +
+  theme_graphs() + theme(strip.text = element_text(size = 18))
+
+ggsave("Graphs/App_Distribution_Age_Kin_Difference.jpg", width = 20, height = 28, dpi = 600)
+ggsave("Graphs/App_Distribution_Age_Kin_Difference.pdf", width = 20, height = 28, dpi = 600,
+  device = "pdf")
+
+## Summary measures for the distribution of ages of kin ----
+dist_age_diff %>%
+  filter(year %in% years_plot,
+         age_focal %in% ages_plot) %>%
+  group_by(year, kin_type, age_focal) %>%
+  summarise(n_age_kin = sum(!is.na(difference)),
+            mean_difference = mean(difference, na.rm = TRUE),
+            min_difference = min(difference, na.rm = TRUE),
+            max_difference = max(difference, na.rm = TRUE),
+            .groups = "drop") %>%
+  filter(kin_type %in% kin_types_plot)
