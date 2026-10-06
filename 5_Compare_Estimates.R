@@ -6,7 +6,7 @@
 # from a SOCSIM microsimulation and the matrix kinship model over 1950-2100
 
 # Created on 08-04-2026
-# Last modified on 05-10-2026
+# Last modified on 06-10-2026
 #------------------------------------------------------------------------------------------------------
 ## General settings and functions -----
 rm(list=ls(all=TRUE))
@@ -91,8 +91,8 @@ bind_rows(demokin_mean_number, socsim_mean_number) %>%
   labs(x = "Age of focal", y = "Mean number of living kin", color = "Model") +
   scale_color_manual(values = c( "#B22222", "#007A75"))+
   theme_graphs()
-ggsave("Graphs/1_Mean_Number_Kin.jpg", width = 16, height = 12, dpi = 600)
-ggsave("Graphs/1_Mean_Number_Kin.pdf", width = 16, height = 12, dpi = 600, device = "pdf")
+ggsave("Graphs/1_Mean_Number_Kin.jpg", width = 16, height = 11, dpi = 600)
+ggsave("Graphs/1_Mean_Number_Kin.pdf", width = 16, height = 11, dpi = 600, device = "pdf")
 
 
 # Plot mean number of all kin at each age of Focal at selected years from both models
@@ -104,7 +104,7 @@ bind_rows(demokin_mean_number, socsim_mean_number) %>%
   facet_grid(kin_type ~ year, scales = "free_y") +
   labs(x = "Age of focal", y = "Mean number of living kin", color = "Model") +
   scale_color_manual(values = c( "#B22222", "#007A75"))+
-  theme_graphs()
+  theme_graphs() + theme(strip.text = element_text(size=20))
 ggsave("Graphs/App_Mean_Number_Kin.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Mean_Number_Kin.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
 
@@ -235,8 +235,8 @@ mean_age_diff %>%
   facet_grid(kin_type ~ year, scales = "free_y") +
   labs(x = "Age of focal individual",
        y = "Difference in mean age of kin (Socsim - DemoKin)") +
-  theme_graphs() +
-  theme(strip.text = element_text(size = 18))
+  theme_graphs() + 
+  theme(strip.text = element_text(size = 20))
 
 ggsave("Graphs/App_Mean_Age_Kin_Difference.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Mean_Age_Kin_Difference.pdf", width = 20, height = 28, dpi = 600, 
@@ -356,8 +356,12 @@ dist_number_diff %>%
   geom_line(linewidth = 1) +
   facet_grid(kin_type ~ year, scales = "free_y") +
   scale_colour_viridis_d(option = "F", direction = -1, name = "Number of kin") +
-  labs(x = "Age of focal individual", y = "Difference in proportional distribution of kin numbers (Socsim - DemoKin)") +
-  theme_graphs() + theme(strip.text = element_text(size = 18))
+  labs(x = "Age of focal individual", 
+       y = "Difference in proportional distribution of kin numbers (Socsim - DemoKin)") +
+  guides(colour = guide_legend(nrow = 1, byrow = TRUE,
+                               override.aes = list(linewidth = 2))) +
+  theme_graphs() + 
+  theme(strip.text = element_text(size = 20))
 
 ggsave("Graphs/App_Distribution_Number_Kin_Difference.jpg", width = 20, height = 28, dpi = 200)
 ggsave("Graphs/App_Distribution_Number_Kin_Difference.pdf", width = 20, height = 28, dpi = 600,
@@ -470,15 +474,14 @@ plots_dist_age <- dist_age_data %>%
     yr <- unique(df$year)
     ggplot(df, aes(x = age_kin, y = dist_age, fill = Model)) +
       geom_col(position = "identity", width = 1, alpha = 0.6) +
-      facet_grid(kin_type ~ age_focal, scales = "free_y", switch = "y") +
+      facet_grid(kin_type ~ age_focal, scales = "free_y") +
       labs(title = as.character(yr),
            x = "Age of kin", y = "Proportion", fill = "Model") +
       scale_fill_manual(values = c("#B22222", "#007A75")) +
       theme_graphs() +
       theme(legend.position = 'bottom',
-            strip.text.y.left = element_text(angle = 0, size = 10),
-            strip.text.x = element_text(size = 12),
-            axis.text.y = element_text(size = 14))
+            strip.text.x = element_text(size = 20),
+            axis.text.y = element_text(size = 20))
   })
 
 cowplot::plot_grid(plotlist = plots_dist_age, ncol = 1)
@@ -494,15 +497,15 @@ plots_dist_age_app <- dist_age_data %>%
     yr <- unique(df$year)
     ggplot(df, aes(x = age_kin, y = dist_age, fill = Model)) +
       geom_col(position = "identity", width = 1, alpha = 0.6) +
-      facet_grid(kin_type ~ age_focal, scales = "free_y", switch = "y") +
+      facet_grid(kin_type ~ age_focal, scales = "free_y") +
       labs(title = as.character(yr),
            x = "Age of kin", y = "Proportion", fill = "Model") +
       scale_fill_manual(values = c("#B22222", "#007A75")) +
       theme_graphs() +
       theme(legend.position = 'bottom',
-            strip.text.y.left = element_text(angle = 0, size = 10),
-            strip.text.x = element_text(size = 12),
-            axis.text.y = element_text(size = 14))
+            strip.text.y.right = element_text(size = 10),
+            strip.text.x = element_text(size = 20), 
+            axis.text.y = element_text(size = 20))
   })
 
 cowplot::plot_grid(plotlist = plots_dist_age_app, ncol = 1)
@@ -541,7 +544,9 @@ dist_age_diff %>%
   geom_line(linewidth = 1, color = "#594E4C") +
   facet_grid(kin_type ~ age_focal + year, scales = "free_y") +
   labs(x = "Age of kin", y = "Difference in proportional distribution of ages (Socsim - DemoKin)") +
-  theme_graphs() + theme(strip.text = element_text(size = 18))
+  theme_graphs() + 
+  theme(strip.text = element_text(size = 20),
+        axis.text = element_text(size = 20))
 
 ggsave("Graphs/App_Distribution_Age_Kin_Difference.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Distribution_Age_Kin_Difference.pdf", width = 20, height = 28, dpi = 600,
