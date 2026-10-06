@@ -278,7 +278,7 @@ bind_rows(demokin_mean_number, socsim_mean_number, socsim_mean_number_bint) %>%
        color = "Model", linetype = "Birth Interval") +
   guides(color = guide_legend(order = 1),
          linetype = guide_legend(order = 2))+
-  theme_graphs()
+  theme_graphs() + theme(strip.text = element_text(size=20))
 
 ggsave("Graphs/App_Mean_Number_Kin_bint.jpg", width = 20, height = 28, dpi = 600)
 ggsave("Graphs/App_Mean_Number_Kin_bint.pdf", width = 20, height = 28, dpi = 600, device = "pdf")
