@@ -7,10 +7,25 @@ using Analytical and Microsimulation Approaches”
 
 # Introduction
 
-We ran demographic microsimulation and formal demographic models using
-data for Sweden from the [World Population Prospects (WPP) 2024
-Revision](https://population.un.org/wpp/downloads?folder=Standard%20Projections&group=CSV%20format)
-(2024-2100)
+Analytical and microsimulation models are the primary approaches for
+estimating kinship networks when detailed, long-term demographic data
+including kinship ties are unavailable. Although both methods use
+population-level demographic data as inputs, their methodological
+formulations, assumptions and outputs differ. Analytical models offer
+mathematical transparency, enabling the calculation of expected values,
+but are limited in capturing individual variability and interactions.
+Conversely, microsimulation models simulate demographic events at the
+individual level, enabling the estimation of the number and
+distributions of kin, but they are computationally intensive and rely on
+additional assumptions. Despite their widespread use, systematic
+comparisons between these approaches remain limited. This study examines
+the consistency between matrix kinship models and SOCSIM demographic
+microsimulation when estimating kinship networks under comparable
+assumptions. Using fertility and mortality data for Sweden (1950-2100)
+from the [World Population Prospects (WPP) 2024
+Revision](https://population.un.org/wpp/downloads?folder=Standard%20Projections&group=CSV%20format),
+we compared the means and distributions of the numbers and ages of
+different kin estimated from both models.
 
 # Scripts for reproducible results
 
